@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const { setLogFile } = require('./utils/logger');
 const { formatNumber, formatUSD } = require('./utils/format');
+const { updatePrices, getPrices } = require('./api/prices');
 const { runAutomation } = require('./automation');
 const { loadStats } = require('./stats/tracker');
 
@@ -27,9 +28,10 @@ async function showStartupMessage() {
   console.clear();
   const stats = loadStats();
 
-  // Fetch user info from API
+  // Fetch user info and prices from API
   let userInfo = null;
   try {
+    await updatePrices();
     const { apiRequest } = require('./api/client');
     const response = await apiRequest('https://bc.game/api/vault/bc-engine/user/info/', 'POST');
     userInfo = response.data;
@@ -42,8 +44,12 @@ async function showStartupMessage() {
   console.log('='.repeat(60));
 
   if (userInfo) {
+    const prices = getPrices();
+    const stakeUsdValue = (parseFloat(userInfo.stakeAmount) * parseFloat(prices.BC)).toFixed(2);
+
     console.log(`\n👤 Account Status:`);
     console.log(`   Current stake: ${formatNumber(userInfo.stakeAmount)} BC`);
+    console.log(`   Stake value: ${formatUSD(stakeUsdValue)}`);
     console.log(`   Pending balance: ${formatUSD(userInfo.pendingBalance)}`);
     console.log(`   Earned total: ${formatUSD(userInfo.earnedTotal)}`);
   }
