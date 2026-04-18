@@ -1,16 +1,18 @@
 {
-  "name": "bc-game-automation",
+  "name": "bc-game-engine-automation",
   "version": "2.0.0",
-  "description": "BC.Game auto-stake automation",
+  "description": "BC.Game Engine Auto-Stake Automation - Automatically claim, swap, and stake earnings",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node src/index.js"
+    "dev": "node src/index.js",
+    "export-history": "node scripts/export-history.js"
   },
   "bin": {
     "bc-game-automation": "src/index.js"
   },
   "dependencies": {
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "exceljs": "^4.4.0"
   }
 }

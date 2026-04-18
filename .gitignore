@@ -5,6 +5,12 @@ node_modules/
 .bc-game-state.json
 .bc-game-stats.json
 bc-game.log
+bc-game-history.log
 *.log
 .DS_Store
 api-responses/
+
+# Generated exports
+bc-game-analysis-*.xlsx
+bc-game-history-*.csv
+bc-game-history-*.json

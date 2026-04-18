@@ -1,5 +1,5 @@
 const { apiRequest } = require('./client');
-const { log } = require('../utils/logger');
+const { log, logFile } = require('../utils/logger');
 
 let currentPrices = {
   BC: 0,
@@ -12,10 +12,10 @@ async function updatePrices() {
     if (response.code === 0 && response.data) {
       currentPrices.BC = parseFloat(response.data.BC) || 0;
       currentPrices.lastUpdated = new Date().toISOString();
-      log(`Updated BC price: $${currentPrices.BC}`);
+      logFile(`Updated BC price: $${currentPrices.BC}`);
     }
   } catch (error) {
-    log(`Failed to fetch prices: ${error.message}`, 'WARN');
+    logFile(`Failed to fetch prices: ${error.message}`, 'WARN');
   }
 }
 

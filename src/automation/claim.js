@@ -1,11 +1,11 @@
 const { apiRequest } = require('../api/client');
-const { log } = require('../utils/logger');
+const { log, logFile } = require('../utils/logger');
 
 async function getPendingBalance() {
   try {
     const userInfo = await apiRequest('https://bc.game/api/vault/bc-engine/user/info/', 'POST');
     const pendingBalance = userInfo.data?.pendingBalance || 0;
-    log(`Fetched user info. Pending balance: ${pendingBalance}`);
+    logFile(`Fetched user info. Pending balance: ${pendingBalance}`);
     return pendingBalance;
   } catch (error) {
     log(`Failed to get pending balance`, 'ERROR');

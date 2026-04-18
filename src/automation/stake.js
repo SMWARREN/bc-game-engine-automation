@@ -1,5 +1,5 @@
 const { apiRequest } = require('../api/client');
-const { log } = require('../utils/logger');
+const { log, logFile } = require('../utils/logger');
 
 const MIN_STAKE_AMOUNT = 0.1;
 
@@ -20,7 +20,7 @@ async function previewStake(stakeAmount) {
 
     if (previewResponse.code === 0) {
       const preview = previewResponse.data;
-      log(`Preview: Staking ${preview.actualStakeAmount} BCD → Total after: ${preview.totalStakeAfter}`, 'SUCCESS');
+      logFile(`Preview: Staking ${preview.actualStakeAmount} BCD → Total after: ${preview.totalStakeAfter}`);
       return preview;
     } else {
       throw new Error(previewResponse.msg || 'Preview failed');
@@ -49,7 +49,7 @@ async function executStake(stakeAmount) {
 
     if (stakeResponse.code === 0) {
       const stake = stakeResponse.data;
-      log(`Successfully staked ${stake.actualStakeAmount} BCD → Total: ${stake.totalStakeAfter}`, 'SUCCESS');
+      logFile(`Successfully staked ${stake.actualStakeAmount} BCD → Total: ${stake.totalStakeAfter}`);
       return true;
     } else {
       throw new Error(stakeResponse.msg || 'Stake failed');

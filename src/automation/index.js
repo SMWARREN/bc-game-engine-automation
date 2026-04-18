@@ -4,11 +4,11 @@ const { swapToBCD } = require('./swap');
 const { previewStake, executStake } = require('./stake');
 const { saveState, loadState, clearState } = require('../state/manager');
 const { updateStats } = require('../stats/tracker');
-const { log } = require('../utils/logger');
+const { log, logFile } = require('../utils/logger');
 const { formatNumber, formatUSD } = require('../utils/format');
 
 async function runAutomation() {
-  log('=== Starting BC.Game Auto-Stake ===');
+  logFile('=== Starting BC.Game Auto-Stake ===');
 
   try {
     // Update prices at start of each cycle
@@ -19,30 +19,30 @@ async function runAutomation() {
 
     // Resume from saved state if it exists
     if (state) {
-      log(`Resuming from saved state: step=${state.step}`);
+      logFile(`Resuming from saved state: step=${state.step}`);
     }
 
     // Step 1: Get pending balance & claim
     if (!state || state.step < 1) {
       const pendingBalance = await getPendingBalance();
       if (pendingBalance <= 0) {
-        log('No pending balance to claim');
+        logFile('No pending balance to claim');
         return;
       }
 
-      log(`Found pending balance: ${pendingBalance}`);
+      logFile(`Found pending balance: ${pendingBalance}`);
 
       claimedBalance = await claimEarnings();
       if (claimedBalance <= 0) {
-        log('Claim failed or no amount, skipping swap/stake');
+        log('Claim failed or no amount, skipping swap/stake', 'WARN');
         return;
       }
 
-      log(`Claimed amount: ${claimedBalance}`);
+      logFile(`Claimed amount: ${claimedBalance}`);
       saveState({ step: 1, claimedBalance, timestamp: Date.now() });
     } else {
       claimedBalance = state.claimedBalance;
-      log(`Resuming with claimed amount: ${claimedBalance}`);
+      logFile(`Resuming with claimed amount: ${claimedBalance}`);
     }
 
     // Step 2: Swap to BC
@@ -53,16 +53,16 @@ async function runAutomation() {
       bcPrice = swapResult.bcPrice;
 
       if (bcdAmount <= 0) {
-        log('Swap resulted in 0 BC, skipping stake');
+        log('Swap resulted in 0 BC, skipping stake', 'WARN');
         return;
       }
 
-      log(`Swapped to ${bcdAmount} BC @ $${bcPrice}`);
+      logFile(`Swapped to ${bcdAmount} BC @ $${bcPrice}`);
       saveState({ step: 2, claimedBalance, bcdAmount, bcPrice, timestamp: Date.now() });
     } else {
       bcdAmount = state.bcdAmount;
       bcPrice = state.bcPrice || 0;
-      log(`Resuming with BC amount: ${bcdAmount}`);
+      logFile(`Resuming with BC amount: ${bcdAmount}`);
     }
 
     // Step 3: Preview stake
@@ -70,16 +70,16 @@ async function runAutomation() {
       preview = await previewStake(bcdAmount);
 
       if (!preview) {
-        log('Stake preview failed, saving state to retry');
+        logFile('Stake preview failed, saving state to retry');
         saveState({ step: 2, claimedBalance, bcdAmount, bcPrice, timestamp: Date.now() });
         return;
       }
 
-      log(`Preview successful: will stake ${preview.actualStakeAmount} BC`);
+      logFile(`Preview successful: will stake ${preview.actualStakeAmount} BC`);
       saveState({ step: 3, claimedBalance, bcdAmount, bcPrice, preview, timestamp: Date.now() });
     } else {
       preview = state.preview;
-      log(`Resuming with preview data`);
+      logFile(`Resuming with preview data`);
     }
 
     // Step 4: Execute stake
@@ -106,10 +106,10 @@ async function runAutomation() {
       console.log(`   Staked Value:   ${formatUSD(stats.totalBcUsdValue)}`);
       console.log(`   Avg Price:      ${formatUSD(stats.avgBcPrice)}/BC`);
       console.log('='.repeat(60) + '\n');
-      log(`✓ Complete cycle: ${claimedBalance} USD → ${bcdAmount} BCD → Staked $${bcUsdValue} worth of BC @ $${finalPrice}`);
+      logFile(`✓ Complete cycle: ${claimedBalance} USD → ${bcdAmount} BCD → Staked $${bcUsdValue} worth of BC @ $${finalPrice}`);
       clearState();
     } else {
-      log(`✗ Stake failed, saving state to retry`);
+      logFile(`✗ Stake failed, saving state to retry`);
       saveState({ step: 3, claimedBalance, bcdAmount, bcPrice, preview, timestamp: Date.now() });
     }
   } catch (error) {
