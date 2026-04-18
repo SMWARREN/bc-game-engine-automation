@@ -333,13 +333,31 @@ async function runAutomation() {
 }
 
 // Show stats on startup
-function showStartupMessage() {
+async function showStartupMessage() {
   console.clear();
   const stats = loadStats();
+
+  // Fetch user info from API
+  let userInfo = null;
+  try {
+    const response = await apiRequest('https://bc.game/api/vault/bc-engine/user/info/', 'POST');
+    userInfo = response.data;
+  } catch (error) {
+    // Continue even if API fails
+  }
+
   console.log('\n' + '='.repeat(60));
   console.log('🎮 BC.Game Auto-Stake Automation');
   console.log('='.repeat(60));
-  console.log(`📊 Lifetime Stats:`);
+
+  if (userInfo) {
+    console.log(`👤 Account Status:`);
+    console.log(`   Current stake: ${userInfo.stakeAmount} BC`);
+    console.log(`   Pending balance: ${userInfo.pendingBalance} USD`);
+    console.log(`   Earned total: ${userInfo.earnedTotal} USD`);
+  }
+
+  console.log(`\n📊 Lifetime Stats:`);
   console.log(`   Cycles completed: ${stats.cycleCount}`);
   console.log(`   USD claimed: $${stats.totalUsdClaimed}`);
   console.log(`   BC received: ${stats.totalBcReceived}`);
@@ -352,10 +370,10 @@ function showStartupMessage() {
 // Run every 5 minutes
 const INTERVAL_MS = 5 * 60 * 1000;
 
-showStartupMessage();
-
-// Run immediately on start
-runAutomation();
+(async () => {
+  await showStartupMessage();
+  runAutomation();
+})();
 
 // Then schedule for every 5 minutes
 setInterval(runAutomation, INTERVAL_MS);
