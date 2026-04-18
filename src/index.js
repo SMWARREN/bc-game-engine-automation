@@ -5,6 +5,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const path = require('path');
 const fs = require('fs');
 const { setLogFile } = require('./utils/logger');
+const { formatNumber, formatUSD } = require('./utils/format');
 const { runAutomation } = require('./automation');
 const { loadStats } = require('./stats/tracker');
 
@@ -42,17 +43,17 @@ async function showStartupMessage() {
 
   if (userInfo) {
     console.log(`\n👤 Account Status:`);
-    console.log(`   Current stake: ${userInfo.stakeAmount} BC`);
-    console.log(`   Pending balance: ${userInfo.pendingBalance} USD`);
-    console.log(`   Earned total: ${userInfo.earnedTotal} USD`);
+    console.log(`   Current stake: ${formatNumber(userInfo.stakeAmount)} BC`);
+    console.log(`   Pending balance: ${formatUSD(userInfo.pendingBalance)}`);
+    console.log(`   Earned total: ${formatUSD(userInfo.earnedTotal)}`);
   }
 
   console.log(`\n📊 Lifetime Stats:`);
   console.log(`   Cycles: ${stats.cycleCount}`);
-  console.log(`   Claimed: $${stats.totalUsdClaimed}`);
-  console.log(`   BC Received: ${stats.totalBcReceived}`);
-  console.log(`   BC Staked: ${stats.totalBcStaked} ($${stats.totalBcUsdValue})`);
-  console.log(`   Avg Price: $${stats.avgBcPrice}/BC`);
+  console.log(`   Claimed: ${formatUSD(stats.totalUsdClaimed)}`);
+  console.log(`   BC Received: ${formatNumber(stats.totalBcReceived)}`);
+  console.log(`   BC Staked: ${formatNumber(stats.totalBcStaked)} (${formatUSD(stats.totalBcUsdValue)})`);
+  console.log(`   Avg Price: ${formatUSD(stats.avgBcPrice)}/BC`);
   console.log(`   Last run: ${stats.lastUpdated ? new Date(stats.lastUpdated).toLocaleString() : 'Never'}`);
   console.log(`\n⏱️  Running every 5 minutes...`);
   console.log('='.repeat(60) + '\n');
