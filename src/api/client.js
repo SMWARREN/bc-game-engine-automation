@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { log } = require('../utils/logger');
+const { log, logFile } = require('../utils/logger');
 const { saveResponse } = require('../responses/tracker');
 
 const COOKIES = process.env.BC_GAME_COOKIES;
@@ -7,10 +7,11 @@ const COOKIES = process.env.BC_GAME_COOKIES;
 async function apiRequest(url, method = 'POST', body = null) {
   try {
     const timestamp = new Date().toISOString();
-    log(`[${timestamp}] ${method} ${url}`);
+    // API logs go to file only
+    logFile(`[${timestamp}] ${method} ${url}`);
 
     if (body && Object.keys(body).length > 0) {
-      log(`  Body: ${JSON.stringify(body)}`);
+      logFile(`  Body: ${JSON.stringify(body)}`);
     }
 
     const fetchOptions = {
@@ -39,7 +40,7 @@ async function apiRequest(url, method = 'POST', body = null) {
     const response = await fetch(url, fetchOptions);
     const data = await response.json();
 
-    log(`  Response:\n${JSON.stringify(data, null, 2)}`);
+    logFile(`  Response:\n${JSON.stringify(data, null, 2)}`);
     saveResponse(url, method, body, data);
 
     if (!response.ok) {
@@ -48,7 +49,7 @@ async function apiRequest(url, method = 'POST', body = null) {
 
     return data;
   } catch (error) {
-    log(`API request failed to ${url}: ${error.message}`, 'ERROR');
+    logFile(`API request failed to ${url}: ${error.message}`, 'ERROR');
     throw error;
   }
 }
