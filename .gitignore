@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+.bc-game-state.json
+.bc-game-stats.json
+bc-game.log
+*.log
+.DS_Store
