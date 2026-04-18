@@ -7,3 +7,4 @@ node_modules/
 bc-game.log
 *.log
 .DS_Store
+api-responses/
