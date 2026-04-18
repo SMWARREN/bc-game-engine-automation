@@ -41,20 +41,21 @@ async function showStartupMessage() {
   console.log('='.repeat(60));
 
   if (userInfo) {
-    console.log(`👤 Account Status:`);
+    console.log(`\n👤 Account Status:`);
     console.log(`   Current stake: ${userInfo.stakeAmount} BC`);
     console.log(`   Pending balance: ${userInfo.pendingBalance} USD`);
     console.log(`   Earned total: ${userInfo.earnedTotal} USD`);
   }
 
   console.log(`\n📊 Lifetime Stats:`);
-  console.log(`   Cycles completed: ${stats.cycleCount}`);
-  console.log(`   USD claimed: $${stats.totalUsdClaimed}`);
-  console.log(`   BC received: ${stats.totalBcReceived}`);
-  console.log(`   BC staked: ${stats.totalBcStaked}`);
+  console.log(`   Cycles: ${stats.cycleCount}`);
+  console.log(`   Claimed: $${stats.totalUsdClaimed}`);
+  console.log(`   BC Received: ${stats.totalBcReceived}`);
+  console.log(`   BC Staked: ${stats.totalBcStaked} ($${stats.totalBcUsdValue})`);
+  console.log(`   Avg Price: $${stats.avgBcPrice}/BC`);
   console.log(`   Last run: ${stats.lastUpdated ? new Date(stats.lastUpdated).toLocaleString() : 'Never'}`);
-  console.log('='.repeat(60));
-  console.log('⏱️  Running every 5 minutes...\n');
+  console.log(`\n⏱️  Running every 5 minutes...`);
+  console.log('='.repeat(60) + '\n');
 }
 
 // Main

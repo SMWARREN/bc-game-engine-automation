@@ -91,10 +91,20 @@ async function runAutomation() {
       const stats = updateStats(claimedBalance, bcdAmount, preview.actualStakeAmount, finalPrice);
       const bcUsdValue = (parseFloat(preview.actualStakeAmount) * parseFloat(finalPrice)).toFixed(4);
 
-      console.log(`\n✅ CYCLE #${stats.cycleCount} COMPLETE`);
-      console.log(`   $${claimedBalance} USD → ${bcdAmount} BC ($${bcUsdValue}) → Staked`);
-      console.log(`   Price: $${finalPrice}/BC`);
-      console.log(`   Totals: $${stats.totalUsdClaimed} claimed | ${stats.totalBcReceived} BC ($${ stats.totalBcUsdValue}) | Avg: $${stats.avgBcPrice}/BC\n`);
+      console.log('\n' + '='.repeat(60));
+      console.log(`✅ CYCLE #${stats.cycleCount} COMPLETE`);
+      console.log('='.repeat(60));
+      console.log(`\n💰 This Cycle:`);
+      console.log(`   Claimed:    $${claimedBalance}`);
+      console.log(`   Swapped to: ${bcdAmount} BC @ $${finalPrice}`);
+      console.log(`   Staked:     $${bcUsdValue} worth`);
+      console.log(`\n📊 Lifetime Totals:`);
+      console.log(`   USD Claimed:    $${stats.totalUsdClaimed}`);
+      console.log(`   BC Received:    ${stats.totalBcReceived}`);
+      console.log(`   BC Staked:      ${stats.totalBcStaked}`);
+      console.log(`   Staked Value:   $${stats.totalBcUsdValue}`);
+      console.log(`   Avg Price:      $${stats.avgBcPrice}/BC`);
+      console.log('='.repeat(60) + '\n');
       log(`✓ Complete cycle: ${claimedBalance} USD → ${bcdAmount} BCD → Staked $${bcUsdValue} worth of BC @ $${finalPrice}`);
       clearState();
     } else {
