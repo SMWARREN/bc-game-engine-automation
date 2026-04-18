@@ -11,6 +11,12 @@ const STATE_FILE = path.join(__dirname, '.bc-game-state.json');
 const STATS_FILE = path.join(__dirname, '.bc-game-stats.json');
 const MIN_STAKE_AMOUNT = 0.1; // Minimum amount to stake
 
+// Price cache
+let currentPrices = {
+  BC: 0,
+  lastUpdated: null,
+};
+
 // State management
 function saveState(state) {
   fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
@@ -83,8 +89,22 @@ function log(message, level = 'INFO') {
   fs.appendFileSync(LOG_FILE, logMessage + '\n');
 }
 
+// Fetch current crypto prices
+async function updatePrices() {
+  try {
+    const response = await apiRequest('https://bc.game/api/game/support/system/conf/usdPrice', 'GET');
+    if (response.code === 0 && response.data) {
+      currentPrices.BC = parseFloat(response.data.BC) || 0;
+      currentPrices.lastUpdated = new Date().toISOString();
+      log(`Updated BC price: $${currentPrices.BC}`);
+    }
+  } catch (error) {
+    log(`Failed to fetch prices: ${error.message}`, 'WARN');
+  }
+}
+
 // API request wrapper
-async function apiRequest(url, method = 'POST', body = {}) {
+async function apiRequest(url, method = 'POST', body = null) {
   try {
     const reqLog = `[${new Date().toISOString()}] ${method} ${url}`;
     if (body && Object.keys(body).length > 0) {
@@ -93,7 +113,7 @@ async function apiRequest(url, method = 'POST', body = {}) {
       fs.appendFileSync(LOG_FILE, `${reqLog}\n`);
     }
 
-    const response = await fetch(url, {
+    const fetchOptions = {
       method,
       headers: {
         'accept': 'application/json, text/plain, */*',
@@ -110,8 +130,13 @@ async function apiRequest(url, method = 'POST', body = {}) {
         'referer': 'https://bc.game/bc',
         'Cookie': COOKIES,
       },
-      body: method === 'POST' ? JSON.stringify(body) : undefined,
-    });
+    };
+
+    if (method === 'POST' && body) {
+      fetchOptions.body = JSON.stringify(body);
+    }
+
+    const response = await fetch(url, fetchOptions);
 
     const data = await response.json();
     const resLog = `  Response: ${JSON.stringify(data).substring(0, 200)}...`;
@@ -271,6 +296,9 @@ async function runAutomation() {
   log('=== Starting BC.Game Auto-Stake ===');
 
   try {
+    // Update prices at start of each cycle
+    await updatePrices();
+
     let state = loadState();
     let claimedBalance, bcdAmount, preview;
 
@@ -343,13 +371,15 @@ async function runAutomation() {
     const stakeSuccess = await stakeBCD(bcdAmount);
 
     if (stakeSuccess) {
-      const stats = updateStats(claimedBalance, bcdAmount, preview.actualStakeAmount, bcPrice);
-      const bcUsdValue = (parseFloat(preview.actualStakeAmount) * parseFloat(bcPrice)).toFixed(4);
+      // Use current market price if available, fallback to swap price
+      const finalPrice = currentPrices.BC || bcPrice;
+      const stats = updateStats(claimedBalance, bcdAmount, preview.actualStakeAmount, finalPrice);
+      const bcUsdValue = (parseFloat(preview.actualStakeAmount) * parseFloat(finalPrice)).toFixed(4);
       console.log(`\n✅ CYCLE #${stats.cycleCount} COMPLETE`);
-      console.log(`   ${claimedBalance} USD → ${bcdAmount} BC @ $${bcPrice} → Staked`);
+      console.log(`   ${claimedBalance} USD → ${bcdAmount} BC @ $${finalPrice} → Staked`);
       console.log(`   Staked value: $${bcUsdValue}`);
       console.log(`   Totals: $${stats.totalUsdClaimed} claimed | $${stats.totalBcUsdValue} staked value | Avg price: $${stats.avgBcPrice}\n`);
-      log(`✓ Complete cycle: ${claimedBalance} USD → ${bcdAmount} BCD @ $${bcPrice} → Staked ${preview.actualStakeAmount} BCD ($${bcUsdValue})`);
+      log(`✓ Complete cycle: ${claimedBalance} USD → ${bcdAmount} BCD @ $${finalPrice} → Staked ${preview.actualStakeAmount} BCD ($${bcUsdValue})`);
       clearState();
     } else {
       log(`✗ Stake failed, saving state to retry`);
