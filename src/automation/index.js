@@ -92,10 +92,10 @@ async function runAutomation() {
       const bcUsdValue = (parseFloat(preview.actualStakeAmount) * parseFloat(finalPrice)).toFixed(4);
 
       console.log(`\n✅ CYCLE #${stats.cycleCount} COMPLETE`);
-      console.log(`   ${claimedBalance} USD → ${bcdAmount} BC @ $${finalPrice} → Staked`);
-      console.log(`   Staked value: $${bcUsdValue}`);
-      console.log(`   Totals: $${stats.totalUsdClaimed} claimed | $${stats.totalBcUsdValue} staked value | Avg price: $${stats.avgBcPrice}\n`);
-      log(`✓ Complete cycle: ${claimedBalance} USD → ${bcdAmount} BCD @ $${finalPrice} → Staked ${preview.actualStakeAmount} BCD ($${bcUsdValue})`);
+      console.log(`   $${claimedBalance} USD → ${bcdAmount} BC ($${bcUsdValue}) → Staked`);
+      console.log(`   Price: $${finalPrice}/BC`);
+      console.log(`   Totals: $${stats.totalUsdClaimed} claimed | ${stats.totalBcReceived} BC ($${ stats.totalBcUsdValue}) | Avg: $${stats.avgBcPrice}/BC\n`);
+      log(`✓ Complete cycle: ${claimedBalance} USD → ${bcdAmount} BCD → Staked $${bcUsdValue} worth of BC @ $${finalPrice}`);
       clearState();
     } else {
       log(`✗ Stake failed, saving state to retry`);
