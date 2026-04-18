@@ -1,0 +1,56 @@
+const fs = require('fs');
+const { log } = require('../utils/logger');
+const { saveResponse } = require('../responses/tracker');
+
+const COOKIES = process.env.BC_GAME_COOKIES;
+
+async function apiRequest(url, method = 'POST', body = null) {
+  try {
+    const timestamp = new Date().toISOString();
+    log(`[${timestamp}] ${method} ${url}`);
+
+    if (body && Object.keys(body).length > 0) {
+      log(`  Body: ${JSON.stringify(body)}`);
+    }
+
+    const fetchOptions = {
+      method,
+      headers: {
+        'accept': 'application/json, text/plain, */*',
+        'accept-language': 'en',
+        'content-type': 'application/json',
+        'sec-ch-ua': '"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-origin',
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+        'origin': 'https://bc.game',
+        'referer': 'https://bc.game/bc',
+        'Cookie': COOKIES,
+      },
+    };
+
+    if (method === 'POST' && body) {
+      fetchOptions.body = JSON.stringify(body);
+    }
+
+    const response = await fetch(url, fetchOptions);
+    const data = await response.json();
+
+    log(`  Response:\n${JSON.stringify(data, null, 2)}`);
+    saveResponse(url, method, body, data);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return data;
+  } catch (error) {
+    log(`API request failed to ${url}: ${error.message}`, 'ERROR');
+    throw error;
+  }
+}
+
+module.exports = { apiRequest };

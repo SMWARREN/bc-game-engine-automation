@@ -1,11 +1,14 @@
 {
   "name": "bc-game-automation",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "BC.Game auto-stake automation",
-  "main": "bc-game-automate.js",
+  "main": "src/index.js",
   "scripts": {
-    "start": "node bc-game-automate.js",
-    "dev": "node bc-game-automate.js"
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
+  },
+  "bin": {
+    "bc-game-automation": "src/index.js"
   },
   "dependencies": {
     "dotenv": "^16.3.1"
