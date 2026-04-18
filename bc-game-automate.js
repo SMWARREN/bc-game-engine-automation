@@ -78,6 +78,13 @@ function log(message, level = 'INFO') {
 // API request wrapper
 async function apiRequest(url, method = 'POST', body = {}) {
   try {
+    const reqLog = `[${new Date().toISOString()}] ${method} ${url}`;
+    if (body && Object.keys(body).length > 0) {
+      fs.appendFileSync(LOG_FILE, `${reqLog}\n  Body: ${JSON.stringify(body)}\n`);
+    } else {
+      fs.appendFileSync(LOG_FILE, `${reqLog}\n`);
+    }
+
     const response = await fetch(url, {
       method,
       headers: {
@@ -98,12 +105,18 @@ async function apiRequest(url, method = 'POST', body = {}) {
       body: method === 'POST' ? JSON.stringify(body) : undefined,
     });
 
+    const data = await response.json();
+    const resLog = `  Response: ${JSON.stringify(data).substring(0, 200)}...`;
+    fs.appendFileSync(LOG_FILE, `${resLog}\n`);
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
-    return await response.json();
+    return data;
   } catch (error) {
+    const errLog = `  Error: ${error.message}`;
+    fs.appendFileSync(LOG_FILE, `${errLog}\n`);
     log(`API request failed to ${url}: ${error.message}`, 'ERROR');
     throw error;
   }
