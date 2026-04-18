@@ -46,14 +46,22 @@ function loadStats() {
   } catch (error) {
     console.error(`Failed to load stats: ${error.message}`);
   }
-  return { totalUsdClaimed: 0, totalBcReceived: 0, totalBcStaked: 0, cycleCount: 0 };
+  return { totalUsdClaimed: 0, totalBcReceived: 0, totalBcStaked: 0, totalBcUsdValue: 0, cycleCount: 0, avgBcPrice: 0 };
 }
 
-function updateStats(usdClaimed, bcReceived, bcStaked) {
+function updateStats(usdClaimed, bcReceived, bcStaked, bcPrice) {
   const stats = loadStats();
   stats.totalUsdClaimed = (parseFloat(stats.totalUsdClaimed) + parseFloat(usdClaimed)).toFixed(4);
   stats.totalBcReceived = (parseFloat(stats.totalBcReceived) + parseFloat(bcReceived)).toFixed(4);
   stats.totalBcStaked = (parseFloat(stats.totalBcStaked) + parseFloat(bcStaked)).toFixed(4);
+
+  // Calculate USD value of BC staked
+  const bcUsdValue = (parseFloat(bcStaked) * parseFloat(bcPrice)).toFixed(4);
+  stats.totalBcUsdValue = (parseFloat(stats.totalBcUsdValue) + parseFloat(bcUsdValue)).toFixed(4);
+
+  // Track average BC price
+  stats.avgBcPrice = bcPrice;
+
   stats.cycleCount = (stats.cycleCount || 0) + 1;
   stats.lastUpdated = new Date().toISOString();
   fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2));
@@ -184,13 +192,14 @@ async function swapToBCD(amountUsd) {
       throw new Error(swapResponse.msg || 'Swap failed');
     }
 
-    // Extract BC amount from response
+    // Extract BC amount and price from response
     const bcAmount = swapResponse.data?.dealInTokenNumber || 0;
-    log(`Successfully swapped ${amountUsd} USD to ${bcAmount} BC`, 'SUCCESS');
-    return bcAmount;
+    const bcPrice = swapResponse.data?.dealInPrice || 0;
+    log(`Successfully swapped ${amountUsd} USD to ${bcAmount} BC @ $${bcPrice}/BC`, 'SUCCESS');
+    return { bcAmount, bcPrice };
   } catch (error) {
     log(`Failed to swap to BCD: ${error.message}`, 'ERROR');
-    return 0;
+    return { bcAmount: 0, bcPrice: 0 };
   }
 }
 
@@ -294,18 +303,22 @@ async function runAutomation() {
     }
 
     // Step 2: Swap to BCD
+    let bcPrice = 0;
     if (!state || state.step < 2) {
-      bcdAmount = await swapToBCD(claimedBalance);
+      const swapResult = await swapToBCD(claimedBalance);
+      bcdAmount = swapResult.bcAmount;
+      bcPrice = swapResult.bcPrice;
 
       if (bcdAmount <= 0) {
         log('Swap resulted in 0 BCD, skipping stake');
         return;
       }
 
-      log(`Swapped to ${bcdAmount} BCD`);
-      saveState({ step: 2, claimedBalance, bcdAmount, timestamp: Date.now() });
+      log(`Swapped to ${bcdAmount} BCD @ $${bcPrice}/BC`);
+      saveState({ step: 2, claimedBalance, bcdAmount, bcPrice, timestamp: Date.now() });
     } else {
       bcdAmount = state.bcdAmount;
+      bcPrice = state.bcPrice || 0;
       log(`Resuming with BCD amount: ${bcdAmount}`);
     }
 
@@ -330,15 +343,17 @@ async function runAutomation() {
     const stakeSuccess = await stakeBCD(bcdAmount);
 
     if (stakeSuccess) {
-      const stats = updateStats(claimedBalance, bcdAmount, preview.actualStakeAmount);
+      const stats = updateStats(claimedBalance, bcdAmount, preview.actualStakeAmount, bcPrice);
+      const bcUsdValue = (parseFloat(preview.actualStakeAmount) * parseFloat(bcPrice)).toFixed(4);
       console.log(`\n✅ CYCLE #${stats.cycleCount} COMPLETE`);
-      console.log(`   ${claimedBalance} USD → ${bcdAmount} BC → Staked`);
-      console.log(`   Totals: $${stats.totalUsdClaimed} | ${stats.totalBcReceived} BC | ${stats.totalBcStaked} staked\n`);
-      log(`✓ Complete cycle: ${claimedBalance} USD → ${bcdAmount} BCD → Staked ${preview.actualStakeAmount} BCD`);
+      console.log(`   ${claimedBalance} USD → ${bcdAmount} BC @ $${bcPrice} → Staked`);
+      console.log(`   Staked value: $${bcUsdValue}`);
+      console.log(`   Totals: $${stats.totalUsdClaimed} claimed | $${stats.totalBcUsdValue} staked value | Avg price: $${stats.avgBcPrice}\n`);
+      log(`✓ Complete cycle: ${claimedBalance} USD → ${bcdAmount} BCD @ $${bcPrice} → Staked ${preview.actualStakeAmount} BCD ($${bcUsdValue})`);
       clearState();
     } else {
       log(`✗ Stake failed, saving state to retry`);
-      saveState({ step: 3, claimedBalance, bcdAmount, preview, timestamp: Date.now() });
+      saveState({ step: 3, claimedBalance, bcdAmount, bcPrice, preview, timestamp: Date.now() });
     }
   } catch (error) {
     log(`Automation error: ${error.message}`, 'ERROR');
