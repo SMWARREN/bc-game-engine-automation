@@ -4,7 +4,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 
 const path = require('path');
 const fs = require('fs');
-const { setLogFile } = require('./utils/logger');
+const { setLogFile, setQuietMode } = require('./utils/logger');
 const { runAutomation } = require('./automation');
 const { loadStats } = require('./stats/tracker');
 
@@ -26,14 +26,17 @@ async function showStartupMessage() {
   console.clear();
   const stats = loadStats();
 
-  // Fetch user info from API
+  // Fetch user info from API (suppress logs during startup)
   let userInfo = null;
   try {
+    setQuietMode(true);
     const { apiRequest } = require('./api/client');
     const response = await apiRequest('https://bc.game/api/vault/bc-engine/user/info/', 'POST');
     userInfo = response.data;
+    setQuietMode(false);
   } catch (error) {
     // Continue even if API fails
+    setQuietMode(false);
   }
 
   console.log('\n' + '='.repeat(60));
