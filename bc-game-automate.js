@@ -139,8 +139,7 @@ async function apiRequest(url, method = 'POST', body = null) {
     const response = await fetch(url, fetchOptions);
 
     const data = await response.json();
-    const resLog = `  Response: ${JSON.stringify(data).substring(0, 200)}...`;
-    fs.appendFileSync(LOG_FILE, `${resLog}\n`);
+    fs.appendFileSync(LOG_FILE, `  Response:\n${JSON.stringify(data, null, 2)}\n`);
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
