@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node src/index.js",
-    "export-history": "node scripts/export-history.js"
+    "export-history": "node scripts/export-history.js",
+    "dashboard": "node scripts/generate-dashboard.js"
   },
   "bin": {
     "bc-game-automation": "src/index.js"

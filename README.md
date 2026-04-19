@@ -25,11 +25,19 @@ Automatically claim earnings, swap to BC tokens, and stake them every 5 minutes.
 - Cycle count
 - Average BC price
 
+✅ **Interactive Dashboard**
+- View real-time charts in your browser
+- 4 interactive visualizations
+- Daily earnings vs staked
+- Cumulative growth over time
+- Net position tracking
+
 ✅ **History Export**
 - Export all transaction history
 - Daily summaries (earnings, staked, totals)
 - CSV & JSON formats
-- Perfect for Excel analysis
+- Excel workbook with professional formatting
+- Perfect for detailed analysis
 
 ## Setup
 
@@ -70,6 +78,12 @@ npm start
 ```bash
 nohup npm start > bc-game.log 2>&1 &
 ```
+
+**View interactive dashboard with charts:**
+```bash
+npm run dashboard
+```
+Opens `bc-game-dashboard.html` in your browser with 4 interactive charts
 
 **Export history to Excel (CSV + JSON):**
 ```bash
@@ -230,6 +244,37 @@ The script saves progress after each successful step so it can resume if somethi
 - **Now completes successfully**
 
 This means you never lose claimed earnings even if the script crashes mid-cycle.
+
+## Interactive Dashboard
+
+View your earnings and growth with beautiful interactive charts:
+
+```bash
+npm run dashboard
+```
+
+This generates `bc-game-dashboard.html` and opens it in your browser.
+
+### Charts Included
+
+1. **📈 Daily Earnings vs Staked** - Bar chart comparing what you earned vs reinvested each day
+2. **📊 Cumulative Growth** - Line chart showing your total earnings and staked amounts over time
+3. **💰 Daily Net Change** - Bar chart of your daily profit/loss (green = positive, red = negative)
+4. **📉 Net Position** - Line chart showing your cumulative net position over time
+
+### Example Dashboard
+
+The dashboard shows:
+- **Key Stats**: Total earnings, total staked, days tracked, transaction count
+- **Interactive Charts**: Hover to see exact values, zoom and pan
+- **Live Updates**: Re-run `npm run dashboard` anytime to refresh with latest data
+- **Responsive Design**: Works on desktop, tablet, and mobile
+
+Perfect for:
+- 📊 Tracking your progress over time
+- 💹 Seeing daily earnings patterns
+- 🎯 Understanding your reinvestment strategy
+- 📈 Analyzing growth trends
 
 ## History & Analytics
 

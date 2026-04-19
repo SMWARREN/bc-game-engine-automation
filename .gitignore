@@ -14,3 +14,5 @@ api-responses/
 bc-game-analysis-*.xlsx
 bc-game-history-*.csv
 bc-game-history-*.json
+bc-game-dashboard.html
+bc-game-dashboard.log
