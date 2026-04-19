@@ -32,6 +32,7 @@ function processDailySummary(records) {
         date: dateStr,
         earnings: 0,
         staked: 0,
+        unstaked: 0,
         other: 0,
         transactionCount: 0,
         details: [],
@@ -45,6 +46,8 @@ function processDailySummary(records) {
       dailyData[dateStr].earnings += amount;
     } else if (type === 'stake' || type.includes('stake')) {
       dailyData[dateStr].staked += amount;
+    } else if (type === 'unstake' || type.includes('unstake') || type === 'withdrawal') {
+      dailyData[dateStr].unstaked += amount;
     } else {
       dailyData[dateStr].other += amount;
     }

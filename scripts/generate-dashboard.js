@@ -29,15 +29,23 @@ async function generateDashboard() {
 
   // Prepare chart data
   const dates = dailySummaries.map(d => d.date);
-  const earnings = dailySummaries.map(d => parseFloat(d.earnings || 0).toFixed(4));
-  const staked = dailySummaries.map(d => parseFloat(d.staked || 0).toFixed(4));
-  const cumEarnings = dailySummaries.map(d => parseFloat(d.cumulativeEarnings || 0).toFixed(4));
-  const cumStaked = dailySummaries.map(d => parseFloat(d.cumulativeStaked || 0).toFixed(4));
-  const netDaily = dailySummaries.map(d => (parseFloat(d.earnings || 0) - parseFloat(d.staked || 0)).toFixed(4));
+  const earnings = dailySummaries.map(d => parseFloat(d.earnings || 0));
+  const staked = dailySummaries.map(d => parseFloat(d.staked || 0));
+  const unstaked = dailySummaries.map(d => parseFloat(d.unstaked || 0));
+
+  // Calculate cumulative values
+  let cumEarnings = 0;
+  let cumStaked = 0;
+  let cumUnstaked = 0;
+  const cumulativeEarnings = earnings.map(e => { cumEarnings += e; return cumEarnings; });
+  const cumulativeStaked = staked.map(s => { cumStaked += s; return cumStaked; });
+  const cumulativeUnstaked = unstaked.map(u => { cumUnstaked += u; return cumUnstaked; });
+  const netPosition = earnings.map((e, i) => e - staked[i] + unstaked[i]);
 
   const totals = {
-    totalEarnings: dailySummaries.reduce((sum, d) => sum + d.earnings, 0).toFixed(4),
-    totalStaked: dailySummaries.reduce((sum, d) => sum + d.staked, 0).toFixed(4),
+    totalEarnings: earnings.reduce((a, b) => a + b, 0).toFixed(4),
+    totalStaked: staked.reduce((a, b) => a + b, 0).toFixed(4),
+    totalUnstaked: unstaked.reduce((a, b) => a + b, 0).toFixed(4),
     totalTransactions: dailySummaries.reduce((sum, d) => sum + d.transactionCount, 0),
     daysTracked: dailySummaries.length,
   };
@@ -57,7 +65,7 @@ async function generateDashboard() {
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
       color: #e0e0e0;
       padding: 20px;
@@ -65,7 +73,7 @@ async function generateDashboard() {
     }
 
     .container {
-      max-width: 1400px;
+      max-width: 1600px;
       margin: 0 auto;
     }
 
@@ -84,7 +92,7 @@ async function generateDashboard() {
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 15px;
       margin-bottom: 40px;
     }
@@ -93,12 +101,12 @@ async function generateDashboard() {
       background: rgba(14, 165, 233, 0.1);
       border: 1px solid #0ea5e9;
       border-radius: 8px;
-      padding: 20px;
+      padding: 15px;
       text-align: center;
     }
 
     .stat-label {
-      font-size: 0.9em;
+      font-size: 0.85em;
       color: #0ea5e9;
       margin-bottom: 8px;
       text-transform: uppercase;
@@ -106,15 +114,15 @@ async function generateDashboard() {
     }
 
     .stat-value {
-      font-size: 1.8em;
+      font-size: 1.6em;
       font-weight: bold;
       color: #10b981;
     }
 
     .charts-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-      gap: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+      gap: 25px;
       margin-bottom: 40px;
     }
 
@@ -124,11 +132,11 @@ async function generateDashboard() {
       border-radius: 8px;
       padding: 20px;
       position: relative;
-      height: 400px;
+      height: 420px;
     }
 
     .chart-title {
-      font-size: 1.3em;
+      font-size: 1.2em;
       margin-bottom: 15px;
       color: #0ea5e9;
       font-weight: bold;
@@ -136,6 +144,44 @@ async function generateDashboard() {
 
     canvas {
       max-height: 350px;
+    }
+
+    .daily-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .daily-card {
+      background: rgba(45, 45, 68, 0.8);
+      border: 1px solid #0ea5e9;
+      border-radius: 8px;
+      padding: 15px;
+    }
+
+    .daily-date {
+      font-size: 1.1em;
+      font-weight: bold;
+      color: #0ea5e9;
+      margin-bottom: 10px;
+    }
+
+    .daily-stat {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(14, 165, 233, 0.3);
+    }
+
+    .daily-stat-label {
+      color: #999;
+    }
+
+    .daily-stat-value {
+      font-weight: bold;
+      color: #10b981;
     }
 
     .footer {
@@ -147,10 +193,9 @@ async function generateDashboard() {
     }
 
     @media (max-width: 768px) {
-      .charts-grid {
+      .charts-grid, .daily-grid {
         grid-template-columns: 1fr;
       }
-
       h1 {
         font-size: 1.8em;
       }
@@ -161,49 +206,52 @@ async function generateDashboard() {
   <div class="container">
     <header>
       <h1>🎮 BC.Game Engine Auto-Stake Dashboard</h1>
-      <p>Real-time earnings tracking and analysis</p>
+      <p>Real-time earnings, staking, and withdrawal tracking</p>
     </header>
 
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-label">Total Earnings</div>
-        <div class="stat-value">${totals.totalEarnings} BCD</div>
+        <div class="stat-value">${totals.totalEarnings}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Total Staked</div>
-        <div class="stat-value">${totals.totalStaked} BCD</div>
+        <div class="stat-value">${totals.totalStaked}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Days Tracked</div>
+        <div class="stat-label">Total Unstaked</div>
+        <div class="stat-value">${totals.totalUnstaked}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Days</div>
         <div class="stat-value">${totals.daysTracked}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Total Transactions</div>
-        <div class="stat-value">${totals.totalTransactions}</div>
       </div>
     </div>
 
     <div class="charts-grid">
       <div class="chart-container">
-        <div class="chart-title">📈 Daily Earnings vs Staked</div>
-        <canvas id="earningsChart"></canvas>
+        <div class="chart-title">📊 Daily: Earnings, Staked, Unstaked</div>
+        <canvas id="dailyChart"></canvas>
       </div>
 
       <div class="chart-container">
-        <div class="chart-title">📊 Cumulative Growth</div>
+        <div class="chart-title">📈 Cumulative Growth Over Time</div>
         <canvas id="cumulativeChart"></canvas>
       </div>
 
       <div class="chart-container">
-        <div class="chart-title">💰 Daily Net Change</div>
+        <div class="chart-title">💰 Daily Net Cash Flow</div>
         <canvas id="netChart"></canvas>
       </div>
 
       <div class="chart-container">
-        <div class="chart-title">📉 Net Position Over Time</div>
+        <div class="chart-title">📉 Net Position Trajectory</div>
         <canvas id="positionChart"></canvas>
       </div>
     </div>
+
+    <h2 style="color: #0ea5e9; margin: 40px 0 20px 0;">📅 Daily Breakdown</h2>
+    <div class="daily-grid" id="dailyGrid"></div>
 
     <div class="footer">
       <p>Last updated: ${new Date().toLocaleString()}</p>
@@ -212,6 +260,39 @@ async function generateDashboard() {
   </div>
 
   <script>
+    // Generate daily breakdown cards
+    const dailySummaries = ${JSON.stringify(dailySummaries)};
+    const dailyGrid = document.getElementById('dailyGrid');
+    dailySummaries.forEach(day => {
+      const net = day.earnings - day.staked + day.unstaked;
+      const card = document.createElement('div');
+      card.className = 'daily-card';
+      card.innerHTML = \`
+        <div class="daily-date">\${day.date}</div>
+        <div class="daily-stat">
+          <span class="daily-stat-label">Earned:</span>
+          <span class="daily-stat-value">\${day.earnings.toFixed(4)} BCD</span>
+        </div>
+        <div class="daily-stat">
+          <span class="daily-stat-label">Staked:</span>
+          <span class="daily-stat-value">\${day.staked.toFixed(4)} BCD</span>
+        </div>
+        <div class="daily-stat">
+          <span class="daily-stat-label">Unstaked:</span>
+          <span class="daily-stat-value">\${day.unstaked.toFixed(4)} BCD</span>
+        </div>
+        <div class="daily-stat" style="margin-top: 10px; border-top: 2px solid #0ea5e9;">
+          <span class="daily-stat-label">Net:</span>
+          <span class="daily-stat-value" style="color: \${net >= 0 ? '#10b981' : '#ef4444'}">\${net.toFixed(4)} BCD</span>
+        </div>
+        <div class="daily-stat">
+          <span class="daily-stat-label">Transactions:</span>
+          <span class="daily-stat-value">\${day.transactionCount}</span>
+        </div>
+      \`;
+      dailyGrid.appendChild(card);
+    });
+
     const chartOptions = {
       responsive: true,
       maintainAspectRatio: false,
@@ -233,30 +314,39 @@ async function generateDashboard() {
     };
 
     const dates = ${JSON.stringify(dates)};
-    const earnings = ${JSON.stringify(earnings)}.map(Number);
-    const staked = ${JSON.stringify(staked)}.map(Number);
-    const cumEarnings = ${JSON.stringify(cumEarnings)}.map(Number);
-    const cumStaked = ${JSON.stringify(cumStaked)}.map(Number);
-    const netDaily = ${JSON.stringify(netDaily)}.map(Number);
+    const earnings = ${JSON.stringify(earnings)};
+    const staked = ${JSON.stringify(staked)};
+    const unstaked = ${JSON.stringify(unstaked)};
+    const cumulativeEarnings = ${JSON.stringify(cumulativeEarnings)};
+    const cumulativeStaked = ${JSON.stringify(cumulativeStaked)};
+    const cumulativeUnstaked = ${JSON.stringify(cumulativeUnstaked)};
+    const netPosition = ${JSON.stringify(netPosition)};
 
-    // Chart 1: Daily Earnings vs Staked
-    new Chart(document.getElementById('earningsChart'), {
+    // Chart 1: Daily Earnings, Staked, Unstaked
+    new Chart(document.getElementById('dailyChart'), {
       type: 'bar',
       data: {
         labels: dates,
         datasets: [
           {
-            label: 'Earnings',
+            label: '💵 Earnings',
             data: earnings,
             backgroundColor: '#10b981',
             borderColor: '#059669',
             borderWidth: 1
           },
           {
-            label: 'Staked',
+            label: '📥 Staked',
             data: staked,
             backgroundColor: '#0ea5e9',
             borderColor: '#0284c7',
+            borderWidth: 1
+          },
+          {
+            label: '📤 Unstaked',
+            data: unstaked,
+            backgroundColor: '#f59e0b',
+            borderColor: '#d97706',
             borderWidth: 1
           }
         ]
@@ -264,15 +354,15 @@ async function generateDashboard() {
       options: { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { position: 'top' } } }
     });
 
-    // Chart 2: Cumulative Growth
+    // Chart 2: Cumulative
     new Chart(document.getElementById('cumulativeChart'), {
       type: 'line',
       data: {
         labels: dates,
         datasets: [
           {
-            label: 'Cumulative Earnings',
-            data: cumEarnings,
+            label: 'Total Earned',
+            data: cumulativeEarnings,
             borderColor: '#10b981',
             backgroundColor: 'rgba(16, 185, 129, 0.1)',
             borderWidth: 2,
@@ -280,10 +370,19 @@ async function generateDashboard() {
             fill: true
           },
           {
-            label: 'Cumulative Staked',
-            data: cumStaked,
+            label: 'Total Staked',
+            data: cumulativeStaked,
             borderColor: '#0ea5e9',
             backgroundColor: 'rgba(14, 165, 233, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true
+          },
+          {
+            label: 'Total Unstaked',
+            data: cumulativeUnstaked,
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
             borderWidth: 2,
             tension: 0.4,
             fill: true
@@ -293,44 +392,39 @@ async function generateDashboard() {
       options: { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { position: 'top' } } }
     });
 
-    // Chart 3: Daily Net Change
+    // Chart 3: Daily Net Cash Flow
     new Chart(document.getElementById('netChart'), {
       type: 'bar',
       data: {
         labels: dates,
         datasets: [{
-          label: 'Net Daily (Earnings - Staked)',
-          data: netDaily,
-          backgroundColor: netDaily.map(v => v >= 0 ? '#10b981' : '#ef4444'),
-          borderColor: netDaily.map(v => v >= 0 ? '#059669' : '#dc2626'),
+          label: 'Net Daily (Earned - Staked + Unstaked)',
+          data: netPosition,
+          backgroundColor: netPosition.map(v => v >= 0 ? '#10b981' : '#ef4444'),
+          borderColor: netPosition.map(v => v >= 0 ? '#059669' : '#dc2626'),
           borderWidth: 1
         }]
       },
       options: chartOptions
     });
 
-    // Chart 4: Net Position Over Time
-    let netPosition = 0;
-    const netPositionData = netDaily.map(v => {
-      netPosition += v;
-      return netPosition;
-    });
-
+    // Chart 4: Net Position
     new Chart(document.getElementById('positionChart'), {
       type: 'line',
       data: {
         labels: dates,
         datasets: [{
           label: 'Cumulative Net Position',
-          data: netPositionData,
-          borderColor: netPositionData[netPositionData.length - 1] >= 0 ? '#10b981' : '#ef4444',
-          backgroundColor: netPositionData[netPositionData.length - 1] >= 0
-            ? 'rgba(16, 185, 129, 0.1)'
-            : 'rgba(239, 68, 68, 0.1)',
+          data: netPosition.reduce((acc, val) => {
+            acc.push((acc.length > 0 ? acc[acc.length - 1] : 0) + val);
+            return acc;
+          }, []),
+          borderColor: '#0ea5e9',
+          backgroundColor: 'rgba(14, 165, 233, 0.1)',
           borderWidth: 2,
           tension: 0.4,
           fill: true,
-          pointBackgroundColor: '#0ea5e9',
+          pointBackgroundColor: '#10b981',
           pointBorderColor: '#fff',
           pointBorderWidth: 2,
           pointRadius: 5
