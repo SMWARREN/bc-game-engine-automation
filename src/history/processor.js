@@ -4,6 +4,7 @@ const { logFile } = require('../utils/logger');
 
 function processDailySummary(records) {
   const dailyData = {};
+  const priceMap = {}; // Track prices by day for USD conversion
 
   records.forEach((record) => {
     // Parse timestamp to get date - handle multiple possible fields
@@ -33,6 +34,11 @@ function processDailySummary(records) {
         earnings: 0,
         staked: 0,
         unstaked: 0,
+        earningsUSD: 0,
+        stakedUSD: 0,
+        unstakedUSD: 0,
+        avgPrice: 0,
+        priceCount: 0,
         other: 0,
         transactionCount: 0,
         details: [],
@@ -40,14 +46,27 @@ function processDailySummary(records) {
     }
 
     const amount = parseFloat(record.amount) || 0;
+    const price = parseFloat(record.dealInPrice) || parseFloat(record.price) || 0;
     const type = record.type?.toLowerCase() || 'other';
+
+    // Track average price for the day
+    if (price > 0) {
+      dailyData[dateStr].avgPrice =
+        (dailyData[dateStr].avgPrice * dailyData[dateStr].priceCount + price) /
+        (dailyData[dateStr].priceCount + 1);
+      dailyData[dateStr].priceCount += 1;
+      priceMap[dateStr] = price;
+    }
 
     if (type === 'earning') {
       dailyData[dateStr].earnings += amount;
+      dailyData[dateStr].earningsUSD += price > 0 ? amount * price : amount * (dailyData[dateStr].avgPrice || 0.008);
     } else if (type === 'stake' || type.includes('stake')) {
       dailyData[dateStr].staked += amount;
+      dailyData[dateStr].stakedUSD += price > 0 ? amount * price : amount * (dailyData[dateStr].avgPrice || 0.008);
     } else if (type === 'unstake' || type.includes('unstake') || type === 'withdrawal') {
       dailyData[dateStr].unstaked += amount;
+      dailyData[dateStr].unstakedUSD += price > 0 ? amount * price : amount * (dailyData[dateStr].avgPrice || 0.008);
     } else {
       dailyData[dateStr].other += amount;
     }
@@ -58,6 +77,7 @@ function processDailySummary(records) {
       amount,
       currency: record.currency || 'BCD',
       sourceType: record.sourceType,
+      price,
     });
   });
 

@@ -27,25 +27,43 @@ async function generateDashboard() {
 
   const dailySummaries = processDailySummary(records);
 
-  // Prepare chart data
+  // Prepare chart data - BCD values
   const dates = dailySummaries.map(d => d.date);
   const earnings = dailySummaries.map(d => parseFloat(d.earnings || 0));
   const staked = dailySummaries.map(d => parseFloat(d.staked || 0));
   const unstaked = dailySummaries.map(d => parseFloat(d.unstaked || 0));
 
-  // Calculate cumulative values
+  // Prepare USD values
+  const earningsUSD = dailySummaries.map(d => parseFloat(d.earningsUSD || 0));
+  const stakedUSD = dailySummaries.map(d => parseFloat(d.stakedUSD || 0));
+  const unstakedUSD = dailySummaries.map(d => parseFloat(d.unstakedUSD || 0));
+
+  // Calculate cumulative values (BCD)
   let cumEarnings = 0;
   let cumStaked = 0;
   let cumUnstaked = 0;
   const cumulativeEarnings = earnings.map(e => { cumEarnings += e; return cumEarnings; });
   const cumulativeStaked = staked.map(s => { cumStaked += s; return cumStaked; });
   const cumulativeUnstaked = unstaked.map(u => { cumUnstaked += u; return cumUnstaked; });
+
+  // Calculate cumulative USD
+  let cumEarningsUSD = 0;
+  let cumStakedUSD = 0;
+  let cumUnstakedUSD = 0;
+  const cumulativeEarningsUSD = earningsUSD.map(e => { cumEarningsUSD += e; return cumEarningsUSD; });
+  const cumulativeStakedUSD = stakedUSD.map(s => { cumStakedUSD += s; return cumStakedUSD; });
+  const cumulativeUnstakedUSD = unstakedUSD.map(u => { cumUnstakedUSD += u; return cumUnstakedUSD; });
+
   const netPosition = earnings.map((e, i) => e - staked[i] + unstaked[i]);
+  const netPositionUSD = earningsUSD.map((e, i) => e - stakedUSD[i] + unstakedUSD[i]);
 
   const totals = {
     totalEarnings: earnings.reduce((a, b) => a + b, 0).toFixed(4),
     totalStaked: staked.reduce((a, b) => a + b, 0).toFixed(4),
     totalUnstaked: unstaked.reduce((a, b) => a + b, 0).toFixed(4),
+    totalEarningsUSD: earningsUSD.reduce((a, b) => a + b, 0).toFixed(2),
+    totalStakedUSD: stakedUSD.reduce((a, b) => a + b, 0).toFixed(2),
+    totalUnstakedUSD: unstakedUSD.reduce((a, b) => a + b, 0).toFixed(2),
     totalTransactions: dailySummaries.reduce((sum, d) => sum + d.transactionCount, 0),
     daysTracked: dailySummaries.length,
   };
@@ -211,41 +229,51 @@ async function generateDashboard() {
 
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">Total Earnings</div>
-        <div class="stat-value">${totals.totalEarnings}</div>
+        <div class="stat-label">Total Earnings USD</div>
+        <div class="stat-value">$${totals.totalEarningsUSD}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Total Staked</div>
-        <div class="stat-value">${totals.totalStaked}</div>
+        <div class="stat-label">Total Staked USD</div>
+        <div class="stat-value">$${totals.totalStakedUSD}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Total Unstaked</div>
-        <div class="stat-value">${totals.totalUnstaked}</div>
+        <div class="stat-label">Total Unstaked USD</div>
+        <div class="stat-value">$${totals.totalUnstakedUSD}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Days</div>
+        <div class="stat-label">Days Tracked</div>
         <div class="stat-value">${totals.daysTracked}</div>
       </div>
     </div>
 
     <div class="charts-grid">
       <div class="chart-container">
-        <div class="chart-title">📊 Daily: Earnings, Staked, Unstaked</div>
+        <div class="chart-title">💵 Daily USD: Earnings, Staked, Unstaked</div>
+        <canvas id="dailyUSDChart"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">📈 Cumulative USD Growth Over Time</div>
+        <canvas id="cumulativeUSDChart"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">📊 Daily BCD: Earnings, Staked, Unstaked</div>
         <canvas id="dailyChart"></canvas>
       </div>
 
       <div class="chart-container">
-        <div class="chart-title">📈 Cumulative Growth Over Time</div>
-        <canvas id="cumulativeChart"></canvas>
+        <div class="chart-title">💰 Daily USD Net Cash Flow</div>
+        <canvas id="netUSDChart"></canvas>
       </div>
 
       <div class="chart-container">
-        <div class="chart-title">💰 Daily Net Cash Flow</div>
-        <canvas id="netChart"></canvas>
+        <div class="chart-title">📉 USD Net Position Trajectory</div>
+        <canvas id="positionUSDChart"></canvas>
       </div>
 
       <div class="chart-container">
-        <div class="chart-title">📉 Net Position Trajectory</div>
+        <div class="chart-title">📉 BCD Net Position Trajectory</div>
         <canvas id="positionChart"></canvas>
       </div>
     </div>
@@ -317,12 +345,89 @@ async function generateDashboard() {
     const earnings = ${JSON.stringify(earnings)};
     const staked = ${JSON.stringify(staked)};
     const unstaked = ${JSON.stringify(unstaked)};
+    const earningsUSD = ${JSON.stringify(earningsUSD)};
+    const stakedUSD = ${JSON.stringify(stakedUSD)};
+    const unstakedUSD = ${JSON.stringify(unstakedUSD)};
     const cumulativeEarnings = ${JSON.stringify(cumulativeEarnings)};
     const cumulativeStaked = ${JSON.stringify(cumulativeStaked)};
     const cumulativeUnstaked = ${JSON.stringify(cumulativeUnstaked)};
+    const cumulativeEarningsUSD = ${JSON.stringify(cumulativeEarningsUSD)};
+    const cumulativeStakedUSD = ${JSON.stringify(cumulativeStakedUSD)};
+    const cumulativeUnstakedUSD = ${JSON.stringify(cumulativeUnstakedUSD)};
     const netPosition = ${JSON.stringify(netPosition)};
+    const netPositionUSD = ${JSON.stringify(netPositionUSD)};
 
-    // Chart 1: Daily Earnings, Staked, Unstaked
+    // Chart 0: Daily USD Earnings, Staked, Unstaked
+    new Chart(document.getElementById('dailyUSDChart'), {
+      type: 'bar',
+      data: {
+        labels: dates,
+        datasets: [
+          {
+            label: '💵 Earnings USD',
+            data: earningsUSD,
+            backgroundColor: '#10b981',
+            borderColor: '#059669',
+            borderWidth: 1
+          },
+          {
+            label: '📥 Staked USD',
+            data: stakedUSD,
+            backgroundColor: '#0ea5e9',
+            borderColor: '#0284c7',
+            borderWidth: 1
+          },
+          {
+            label: '📤 Unstaked USD',
+            data: unstakedUSD,
+            backgroundColor: '#f59e0b',
+            borderColor: '#d97706',
+            borderWidth: 1
+          }
+        ]
+      },
+      options: { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { position: 'top' } } }
+    });
+
+    // Chart 0.5: Cumulative USD
+    new Chart(document.getElementById('cumulativeUSDChart'), {
+      type: 'line',
+      data: {
+        labels: dates,
+        datasets: [
+          {
+            label: 'Total Earned USD',
+            data: cumulativeEarningsUSD,
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true
+          },
+          {
+            label: 'Total Staked USD',
+            data: cumulativeStakedUSD,
+            borderColor: '#0ea5e9',
+            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true
+          },
+          {
+            label: 'Total Unstaked USD',
+            data: cumulativeUnstakedUSD,
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true
+          }
+        ]
+      },
+      options: { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { position: 'top' } } }
+    });
+
+    // Chart 1: Daily Earnings, Staked, Unstaked (BCD)
     new Chart(document.getElementById('dailyChart'), {
       type: 'bar',
       data: {
@@ -392,13 +497,29 @@ async function generateDashboard() {
       options: { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { position: 'top' } } }
     });
 
-    // Chart 3: Daily Net Cash Flow
+    // Chart 3: Daily Net Cash Flow (USD)
+    new Chart(document.getElementById('netUSDChart'), {
+      type: 'bar',
+      data: {
+        labels: dates,
+        datasets: [{
+          label: 'Net Daily USD (Earned - Staked + Unstaked)',
+          data: netPositionUSD,
+          backgroundColor: netPositionUSD.map(v => v >= 0 ? '#10b981' : '#ef4444'),
+          borderColor: netPositionUSD.map(v => v >= 0 ? '#059669' : '#dc2626'),
+          borderWidth: 1
+        }]
+      },
+      options: chartOptions
+    });
+
+    // Chart 3b: Daily Net Cash Flow (BCD)
     new Chart(document.getElementById('netChart'), {
       type: 'bar',
       data: {
         labels: dates,
         datasets: [{
-          label: 'Net Daily (Earned - Staked + Unstaked)',
+          label: 'Net Daily BCD (Earned - Staked + Unstaked)',
           data: netPosition,
           backgroundColor: netPosition.map(v => v >= 0 ? '#10b981' : '#ef4444'),
           borderColor: netPosition.map(v => v >= 0 ? '#059669' : '#dc2626'),
@@ -408,19 +529,52 @@ async function generateDashboard() {
       options: chartOptions
     });
 
-    // Chart 4: Net Position
+    // Chart 4: Net Position (USD)
+    const netPositionCumulativeUSD = netPositionUSD.reduce((acc, val) => {
+      acc.push((acc.length > 0 ? acc[acc.length - 1] : 0) + val);
+      return acc;
+    }, []);
+
+    new Chart(document.getElementById('positionUSDChart'), {
+      type: 'line',
+      data: {
+        labels: dates,
+        datasets: [{
+          label: 'Cumulative Net Position USD',
+          data: netPositionCumulativeUSD,
+          borderColor: netPositionCumulativeUSD[netPositionCumulativeUSD.length - 1] >= 0 ? '#10b981' : '#ef4444',
+          backgroundColor: netPositionCumulativeUSD[netPositionCumulativeUSD.length - 1] >= 0
+            ? 'rgba(16, 185, 129, 0.1)'
+            : 'rgba(239, 68, 68, 0.1)',
+          borderWidth: 2,
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: '#10b981',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 5
+        }]
+      },
+      options: { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { position: 'top' } } }
+    });
+
+    // Chart 4b: Net Position (BCD)
+    const netPositionCumulativeBCD = netPosition.reduce((acc, val) => {
+      acc.push((acc.length > 0 ? acc[acc.length - 1] : 0) + val);
+      return acc;
+    }, []);
+
     new Chart(document.getElementById('positionChart'), {
       type: 'line',
       data: {
         labels: dates,
         datasets: [{
-          label: 'Cumulative Net Position',
-          data: netPosition.reduce((acc, val) => {
-            acc.push((acc.length > 0 ? acc[acc.length - 1] : 0) + val);
-            return acc;
-          }, []),
-          borderColor: '#0ea5e9',
-          backgroundColor: 'rgba(14, 165, 233, 0.1)',
+          label: 'Cumulative Net Position BCD',
+          data: netPositionCumulativeBCD,
+          borderColor: netPositionCumulativeBCD[netPositionCumulativeBCD.length - 1] >= 0 ? '#10b981' : '#ef4444',
+          backgroundColor: netPositionCumulativeBCD[netPositionCumulativeBCD.length - 1] >= 0
+            ? 'rgba(16, 185, 129, 0.1)'
+            : 'rgba(239, 68, 68, 0.1)',
           borderWidth: 2,
           tension: 0.4,
           fill: true,
