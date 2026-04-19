@@ -46,27 +46,37 @@ function processDailySummary(records) {
     }
 
     const amount = parseFloat(record.amount) || 0;
-    const price = parseFloat(record.dealInPrice) || parseFloat(record.price) || 0;
     const type = record.type?.toLowerCase() || 'other';
 
-    // Track average price for the day
-    if (price > 0) {
+    // Try to get price - look in multiple fields
+    let price = parseFloat(record.dealInPrice) || parseFloat(record.price) || 0;
+
+    // For EARNING type, amount might already be in USD
+    const isEarning = type === 'earning';
+    let amountUSD = amount;
+
+    // Track average price for the day (for non-earning types)
+    if (price > 0 && !isEarning) {
       dailyData[dateStr].avgPrice =
         (dailyData[dateStr].avgPrice * dailyData[dateStr].priceCount + price) /
         (dailyData[dateStr].priceCount + 1);
       dailyData[dateStr].priceCount += 1;
-      priceMap[dateStr] = price;
     }
 
     if (type === 'earning') {
+      // Earnings are typically in USD already
       dailyData[dateStr].earnings += amount;
-      dailyData[dateStr].earningsUSD += price > 0 ? amount * price : amount * (dailyData[dateStr].avgPrice || 0.008);
+      dailyData[dateStr].earningsUSD += amount;
     } else if (type === 'stake' || type.includes('stake')) {
+      // Stake amount is in BCD, convert to USD using price or average price
+      const priceToUse = price > 0 ? price : (dailyData[dateStr].avgPrice || 0.008);
       dailyData[dateStr].staked += amount;
-      dailyData[dateStr].stakedUSD += price > 0 ? amount * price : amount * (dailyData[dateStr].avgPrice || 0.008);
+      dailyData[dateStr].stakedUSD += amount * priceToUse;
     } else if (type === 'unstake' || type.includes('unstake') || type === 'withdrawal') {
+      // Unstake is in BCD, convert to USD
+      const priceToUse = price > 0 ? price : (dailyData[dateStr].avgPrice || 0.008);
       dailyData[dateStr].unstaked += amount;
-      dailyData[dateStr].unstakedUSD += price > 0 ? amount * price : amount * (dailyData[dateStr].avgPrice || 0.008);
+      dailyData[dateStr].unstakedUSD += amount * priceToUse;
     } else {
       dailyData[dateStr].other += amount;
     }

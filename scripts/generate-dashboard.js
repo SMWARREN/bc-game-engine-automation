@@ -150,7 +150,13 @@ async function generateDashboard() {
       border-radius: 8px;
       padding: 20px;
       position: relative;
-      height: 420px;
+      min-height: 450px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-container canvas {
+      flex: 1;
     }
 
     .chart-title {
