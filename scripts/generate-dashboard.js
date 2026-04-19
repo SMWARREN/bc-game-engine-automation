@@ -269,7 +269,17 @@ async function generateDashboard() {
       </div>
 
       <div class="chart-container">
-        <div class="chart-title">💰 Daily USD Net Cash Flow</div>
+        <div class="chart-title">📈 Cumulative BCD Growth Over Time</div>
+        <canvas id="cumulativeChart"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">💰 Daily BCD Net Cash Flow</div>
+        <canvas id="netChart"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">💵 Daily USD Net Cash Flow</div>
         <canvas id="netUSDChart"></canvas>
       </div>
 
