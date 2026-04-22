@@ -57,6 +57,18 @@ async function generateDashboard() {
   const netPosition = earnings.map((e, i) => e - staked[i] + unstaked[i]);
   const netPositionUSD = earningsUSD.map((e, i) => e - stakedUSD[i] + unstakedUSD[i]);
 
+  // Calculate daily balance (cumulative net position)
+  let balanceUSD = 0;
+  let balanceBCD = 0;
+  const dailyBalanceUSD = netPositionUSD.map(val => {
+    balanceUSD += val;
+    return balanceUSD;
+  });
+  const dailyBalanceBCD = netPosition.map(val => {
+    balanceBCD += val;
+    return balanceBCD;
+  });
+
   const totals = {
     totalEarnings: earnings.reduce((a, b) => a + b, 0).toFixed(4),
     totalStaked: staked.reduce((a, b) => a + b, 0).toFixed(4),
@@ -139,7 +151,7 @@ async function generateDashboard() {
 
     .charts-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
       gap: 25px;
       margin-bottom: 40px;
     }
@@ -217,11 +229,33 @@ async function generateDashboard() {
     }
 
     @media (max-width: 768px) {
-      .charts-grid, .daily-grid {
+      .charts-grid, .daily-grid, .stats-grid {
         grid-template-columns: 1fr;
       }
       h1 {
         font-size: 1.8em;
+      }
+      .chart-container {
+        min-height: 300px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      h1 {
+        font-size: 1.4em;
+      }
+      .stat-card {
+        padding: 10px;
+      }
+      .chart-container {
+        padding: 10px;
+        min-height: 250px;
+      }
+      canvas {
+        max-height: 250px;
       }
     }
   </style>
@@ -281,6 +315,16 @@ async function generateDashboard() {
       <div class="chart-container">
         <div class="chart-title">💵 Daily USD Net Cash Flow</div>
         <canvas id="netUSDChart"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">💰 Daily Balance USD (Total Assets)</div>
+        <canvas id="dailyBalanceUSDChart"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">💳 Daily Balance BCD (Total Assets)</div>
+        <canvas id="dailyBalanceBCDChart"></canvas>
       </div>
 
       <div class="chart-container">
@@ -372,6 +416,8 @@ async function generateDashboard() {
     const cumulativeUnstakedUSD = ${JSON.stringify(cumulativeUnstakedUSD)};
     const netPosition = ${JSON.stringify(netPosition)};
     const netPositionUSD = ${JSON.stringify(netPositionUSD)};
+    const dailyBalanceUSD = ${JSON.stringify(dailyBalanceUSD)};
+    const dailyBalanceBCD = ${JSON.stringify(dailyBalanceBCD)};
 
     // Chart 0: Daily USD Earnings, Staked, Unstaked
     new Chart(document.getElementById('dailyUSDChart'), {
@@ -417,7 +463,7 @@ async function generateDashboard() {
             borderColor: '#10b981',
             backgroundColor: 'rgba(16, 185, 129, 0.1)',
             borderWidth: 2,
-            tension: 0.4,
+            tension: 0.6,
             fill: true
           },
           {
@@ -426,7 +472,7 @@ async function generateDashboard() {
             borderColor: '#0ea5e9',
             backgroundColor: 'rgba(14, 165, 233, 0.1)',
             borderWidth: 2,
-            tension: 0.4,
+            tension: 0.6,
             fill: true
           },
           {
@@ -435,7 +481,7 @@ async function generateDashboard() {
             borderColor: '#f59e0b',
             backgroundColor: 'rgba(245, 158, 11, 0.1)',
             borderWidth: 2,
-            tension: 0.4,
+            tension: 0.6,
             fill: true
           }
         ]
@@ -487,7 +533,7 @@ async function generateDashboard() {
             borderColor: '#10b981',
             backgroundColor: 'rgba(16, 185, 129, 0.1)',
             borderWidth: 2,
-            tension: 0.4,
+            tension: 0.6,
             fill: true
           },
           {
@@ -496,7 +542,7 @@ async function generateDashboard() {
             borderColor: '#0ea5e9',
             backgroundColor: 'rgba(14, 165, 233, 0.1)',
             borderWidth: 2,
-            tension: 0.4,
+            tension: 0.6,
             fill: true
           },
           {
@@ -505,7 +551,7 @@ async function generateDashboard() {
             borderColor: '#f59e0b',
             backgroundColor: 'rgba(245, 158, 11, 0.1)',
             borderWidth: 2,
-            tension: 0.4,
+            tension: 0.6,
             fill: true
           }
         ]
@@ -543,6 +589,54 @@ async function generateDashboard() {
         }]
       },
       options: chartOptions
+    });
+
+    // Chart 3c: Daily Balance USD
+    new Chart(document.getElementById('dailyBalanceUSDChart'), {
+      type: 'line',
+      data: {
+        labels: dates,
+        datasets: [{
+          label: 'Running Balance USD',
+          data: dailyBalanceUSD,
+          borderColor: dailyBalanceUSD[dailyBalanceUSD.length - 1] >= 0 ? '#10b981' : '#ef4444',
+          backgroundColor: dailyBalanceUSD[dailyBalanceUSD.length - 1] >= 0
+            ? 'rgba(16, 185, 129, 0.15)'
+            : 'rgba(239, 68, 68, 0.15)',
+          borderWidth: 3,
+          tension: 0.6,
+          fill: true,
+          pointBackgroundColor: '#0ea5e9',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 6
+        }]
+      },
+      options: { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { position: 'top' } } }
+    });
+
+    // Chart 3d: Daily Balance BCD
+    new Chart(document.getElementById('dailyBalanceBCDChart'), {
+      type: 'line',
+      data: {
+        labels: dates,
+        datasets: [{
+          label: 'Running Balance BCD',
+          data: dailyBalanceBCD,
+          borderColor: dailyBalanceBCD[dailyBalanceBCD.length - 1] >= 0 ? '#10b981' : '#ef4444',
+          backgroundColor: dailyBalanceBCD[dailyBalanceBCD.length - 1] >= 0
+            ? 'rgba(16, 185, 129, 0.15)'
+            : 'rgba(239, 68, 68, 0.15)',
+          borderWidth: 3,
+          tension: 0.6,
+          fill: true,
+          pointBackgroundColor: '#0ea5e9',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 6
+        }]
+      },
+      options: { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { position: 'top' } } }
     });
 
     // Chart 4: Net Position (USD)
