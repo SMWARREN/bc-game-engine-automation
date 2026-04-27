@@ -53,7 +53,7 @@ async function runAutomation() {
       bcPrice = swapResult.bcPrice;
 
       if (bcdAmount <= 0) {
-        log('Swap resulted in 0 BC, skipping stake', 'WARN');
+        log('Swap did not complete, keeping claimed amount saved to retry next cycle', 'WARN');
         return;
       }
 

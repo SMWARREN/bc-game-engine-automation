@@ -38,7 +38,22 @@ async function apiRequest(url, method = 'POST', body = null) {
     }
 
     const response = await fetch(url, fetchOptions);
-    const data = await response.json();
+    const responseText = await response.text();
+    let data;
+
+    try {
+      data = JSON.parse(responseText);
+    } catch (error) {
+      const preview = responseText.slice(0, 500);
+      logFile(`  Non-JSON response (${response.status} ${response.statusText}):\n${preview}`, 'ERROR');
+      saveResponse(url, method, body, {
+        error: 'NON_JSON_RESPONSE',
+        status: response.status,
+        statusText: response.statusText,
+        body: preview,
+      });
+      throw new Error(`Non-JSON response from API (${response.status} ${response.statusText}): ${preview}`);
+    }
 
     logFile(`  Response:\n${JSON.stringify(data, null, 2)}`);
     saveResponse(url, method, body, data);
