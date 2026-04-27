@@ -4,9 +4,6 @@ Automatically claim earnings, swap to BC tokens, and stake them every 5 minutes.
 
 ![BC.Game Auto-Stake Screenshot](./screenshot.png)
 
-<details>
-<summary>Features</summary>
-
 ## Features
 
 ✅ **Automated Workflow**
@@ -41,8 +38,6 @@ Automatically claim earnings, swap to BC tokens, and stake them every 5 minutes.
 - CSV & JSON formats
 - Excel workbook with professional formatting
 - Perfect for detailed analysis
-
-</details>
 
 <details>
 <summary>Docker Setup</summary>
@@ -197,9 +192,6 @@ pkill -f "node src/index.js"
 
 </details>
 
-<details>
-<summary>How It Works</summary>
-
 ## How It Works
 
 ### The Automation Cycle
@@ -274,8 +266,6 @@ All detailed operation logs go to `bc-game.log` for debugging:
 [2026-04-18T14:24:54.890Z] [DEBUG] Preview: Staking 625.4521 BCD → Total after: 2,003,563.53
 [2026-04-18T14:24:55.123Z] [DEBUG] Successfully staked 625.4521 BCD → Total: 2,003,563.53
 ```
-
-</details>
 
 <details>
 <summary>Project Structure</summary>
