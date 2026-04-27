@@ -3,9 +3,11 @@ FROM node:20-alpine
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV npm_config_update_notifier=false
 
 COPY package.json package-lock.json ./
 RUN apk add --no-cache su-exec \
+  && npm install -g npm@11.13.0 \
   && npm ci --omit=dev
 
 COPY src ./src

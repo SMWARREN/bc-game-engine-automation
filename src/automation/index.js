@@ -9,6 +9,7 @@ const { formatNumber, formatUSD } = require('../utils/format');
 
 async function runAutomation() {
   logFile('=== Starting BC.Game Auto-Stake ===');
+  log('Automation check started. Still running in the background.', 'INFO');
 
   try {
     // Update prices at start of each cycle
@@ -27,7 +28,7 @@ async function runAutomation() {
     if (!state || state.step < 1) {
       const pendingBalance = await getPendingBalance();
       if (pendingBalance <= 0) {
-        logFile('No pending balance to claim');
+        log('No pending balance to claim. Still running; next check in 5 minutes.', 'INFO');
         return;
       }
 

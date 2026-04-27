@@ -90,7 +90,7 @@ async function showStartupMessage() {
   console.log(`   BC Staked: ${formatNumber(stats.totalBcStaked)} (${formatUSD(stats.totalBcUsdValue)})`);
   console.log(`   Avg Price: ${formatUSD(stats.avgBcPrice)}/BC`);
   console.log(`   Last run: ${stats.lastUpdated ? new Date(stats.lastUpdated).toLocaleString() : 'Never'}`);
-  console.log(`\n⏱️  Running every 5 minutes...`);
+  console.log(`\n⏱️  Running first check now, then every 5 minutes...`);
   console.log('='.repeat(60) + '\n');
 }
 
