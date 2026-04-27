@@ -21,6 +21,7 @@ async function swapToBCD(amountUsd) {
       'https://bc.game/api/bctrade/forward/api/coin/trade/buyByAmount',
       'POST',
       {
+        price: currentPrice,
         slippage: 5,
         currency: 'BCD',
         amountUsd: parseFloat(amountUsd),
