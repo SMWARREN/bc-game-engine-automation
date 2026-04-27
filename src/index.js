@@ -18,7 +18,27 @@ const fs = require('fs');
 const path = require('path');
 const ENV_FILE = path.join(__dirname, '../.env');
 
+console.log('🔍 Checking .env file...');
+if (fs.existsSync(ENV_FILE)) {
+  console.log('✅ .env file found at:', ENV_FILE);
+} else {
+  console.log('❌ .env file NOT found at:', ENV_FILE);
+}
+
 const COOKIES = process.env.BC_GAME_COOKIES;
+const cookiePreview = COOKIES ? COOKIES.substring(0, 50) + '...' : '[EMPTY]';
+console.log('📝 BC_GAME_COOKIES loaded:', cookiePreview);
+
+if (COOKIES) {
+  console.log('   Length:', COOKIES.length, 'characters');
+  if (COOKIES.length < 100) {
+    console.warn('⚠️  WARNING: Cookie looks too short (should be 200+ chars)');
+  }
+  if (!COOKIES.includes('SESSION') && !COOKIES.includes('_ga')) {
+    console.warn('⚠️  WARNING: Cookie might be invalid (missing SESSION or _ga)');
+  }
+}
+
 if (!COOKIES || COOKIES.trim() === '') {
   console.error('\n' + '='.repeat(60));
   console.error('❌ ERROR: BC_GAME_COOKIES not found or empty');
