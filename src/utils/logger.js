@@ -10,13 +10,13 @@ function getLocalTimestamp() {
   const now = new Date();
   return now.toLocaleString('en-US', {
     year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
     minute: '2-digit',
     second: '2-digit',
-    hour12: false
-  }).replace(/(\d+)\/(\d+)\/(\d+), (\d+):(\d+):(\d+)/, '$3-$1-$2T$4:$5:$6');
+    hour12: true
+  });
 }
 
 // Log to file only (for API details, debug info)
