@@ -97,6 +97,9 @@ To view logs:
 docker compose --env-file /dev/null logs -f
 ```
 
+<details>
+<summary>Local Setup</summary>
+
 ## Local Setup
 
 ### 1. Install Dependencies
@@ -157,6 +160,11 @@ tail -f bc-game.log
 ```bash
 pkill -f "node src/index.js"
 ```
+
+</details>
+
+<details>
+<summary>How It Works</summary>
 
 ## How It Works
 
@@ -233,6 +241,11 @@ All detailed operation logs go to `bc-game.log` for debugging:
 [2026-04-18T14:24:55.123Z] [DEBUG] Successfully staked 625.4521 BCD → Total: 2,003,563.53
 ```
 
+</details>
+
+<details>
+<summary>Project Structure</summary>
+
 ## Project Structure
 
 **Core Files:**
@@ -263,6 +276,11 @@ All detailed operation logs go to `bc-game.log` for debugging:
 - `bc-game-history-*.csv` - Exported daily summaries
 - `bc-game-history-*.json` - Exported detailed records
 - `api-responses/` - Archived API responses by endpoint
+
+</details>
+
+<details>
+<summary>State Persistence</summary>
 
 ## State Persistence
 
@@ -303,6 +321,11 @@ The script saves progress after each successful step so it can resume if somethi
 
 This means you never lose claimed earnings even if the script crashes mid-cycle.
 
+</details>
+
+<details>
+<summary>Interactive Dashboard</summary>
+
 ## Interactive Dashboard
 
 View your earnings and growth with beautiful interactive charts:
@@ -333,6 +356,11 @@ Perfect for:
 - 💹 Seeing daily earnings patterns
 - 🎯 Understanding your reinvestment strategy
 - 📈 Analyzing growth trends
+
+</details>
+
+<details>
+<summary>History & Analytics</summary>
 
 ## History & Analytics
 
@@ -432,6 +460,11 @@ Simple spreadsheet-ready format. Open in Excel, Sheets, or Numbers.
 
 Complete transaction data with all fields for custom analysis.
 
+</details>
+
+<details>
+<summary>Understanding Your Stats</summary>
+
 ## Understanding Your Stats
 
 The script automatically tracks important metrics in `.bc-game-stats.json`:
@@ -468,6 +501,11 @@ You paid an average of $0.0084 per BC.
 ```
 
 These stats are shown every time you start the script, so you can see your progress at a glance.
+
+</details>
+
+<details>
+<summary>Troubleshooting</summary>
 
 ## Troubleshooting
 
@@ -566,6 +604,11 @@ grep "Starting BC.Game Auto-Stake" bc-game.log
 [2026-04-18T14:24:55.124Z] [DEBUG] ✓ Complete cycle: 5.2341 USD → 625.4521 BCD → Staked $5.2341 worth of BC @ $0.008357
 ```
 
+</details>
+
+<details>
+<summary>Updates & Development</summary>
+
 ## Updates & Development
 
 To add features or fix issues:
@@ -578,9 +621,16 @@ git commit -m "Description of change"
 git push origin feature/your-feature
 ```
 
+</details>
+
+<details>
+<summary>Notes</summary>
+
 ## Notes
 
 - Cookies are stored locally only, never committed
 - Delete `.env` when not using
 - Stats accumulate - check `.bc-game-stats.json` anytime
 - All activity logged to `bc-game.log` with timestamps
+
+</details>
