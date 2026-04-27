@@ -70,6 +70,12 @@ async function apiRequest(url, method = 'POST', body = null) {
       throw new Error(errorMsg);
     }
 
+    // Check for API error codes
+    if (data && data.code !== 0 && data.code !== undefined) {
+      const apiError = data.msg || `API error code ${data.code}`;
+      logFile(`API returned error: code=${data.code}, msg=${apiError}, full_response=${JSON.stringify(data)}`, 'ERROR');
+    }
+
     return data;
   } catch (error) {
     logFile(`API request failed to ${url}: ${error.message}`, 'ERROR');
