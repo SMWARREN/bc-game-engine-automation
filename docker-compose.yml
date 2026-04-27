@@ -1,0 +1,12 @@
+services:
+  bc-game-automation:
+    build: .
+    image: bc-game-automation:local
+    env_file:
+      - path: .env
+        format: raw
+    volumes:
+      - ./.bc-game-stats.json:/app/.bc-game-stats.json
+      - ./bc-game.log:/app/bc-game.log
+      - ./api-responses:/app/api-responses
+    restart: unless-stopped
