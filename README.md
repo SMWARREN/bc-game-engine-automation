@@ -95,22 +95,31 @@ Full list: [IANA Timezone Database](https://en.wikipedia.org/wiki/List_of_tz_dat
 
 ### 4. Run with Docker
 
-**Easiest way (macOS/Linux/Windows):**
+**Easiest way:**
 
+**macOS/Linux:**
 ```bash
 ./docker-start.sh
+```
+
+**Windows PowerShell:**
+```powershell
+./docker-start.ps1
+```
+
+**Windows Command Prompt (cmd.exe):**
+```cmd
+docker-start.bat
 ```
 
 **Manual (if script doesn't work):**
 
 **macOS/Linux:**
-
 ```bash
 docker compose --env-file /dev/null up --build
 ```
 
-**Windows PowerShell:**
-
+**Windows (PowerShell or cmd.exe):**
 ```powershell
 docker compose --env-file NUL up --build
 ```
@@ -126,20 +135,26 @@ Docker will automatically create a local `docker-data/` folder if it does not ex
 
 Stop it with:
 
+**macOS/Linux:**
 ```bash
 docker compose --env-file /dev/null down
+```
+
+**Windows:**
+```powershell
+docker compose --env-file NUL down
 ```
 
 Or press `Ctrl+C` if running in foreground.
 
 To view logs:
 
+**macOS/Linux:**
 ```bash
 docker compose --env-file /dev/null logs -f
 ```
 
-**Windows PowerShell:**
-
+**Windows:**
 ```powershell
 docker compose --env-file NUL logs -f
 ```
