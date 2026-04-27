@@ -5,8 +5,8 @@ services:
     env_file:
       - path: .env
         format: raw
+    environment:
+      BC_GAME_DATA_DIR: /data
     volumes:
-      - ./.bc-game-stats.json:/app/.bc-game-stats.json
-      - ./bc-game.log:/app/bc-game.log
-      - ./api-responses:/app/api-responses
+      - ./docker-data:/data
     restart: unless-stopped

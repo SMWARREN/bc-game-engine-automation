@@ -1,10 +1,11 @@
 const fs = require('fs');
-const path = require('path');
 const { log } = require('../utils/logger');
+const { DATA_DIR, dataPath } = require('../utils/paths');
 
-const STATE_FILE = path.join(__dirname, '../../.bc-game-state.json');
+const STATE_FILE = dataPath('.bc-game-state.json');
 
 function saveState(state) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
 }
 

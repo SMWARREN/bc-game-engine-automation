@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
+const { dataPath } = require('../utils/paths');
 
-const RESPONSES_DIR = path.join(__dirname, '../../api-responses');
+const RESPONSES_DIR = dataPath('api-responses');
 const RESPONSES_INDEX = path.join(RESPONSES_DIR, 'index.json');
 
 function ensureResponsesDir() {

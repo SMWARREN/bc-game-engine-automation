@@ -11,6 +11,7 @@ npm-debug.log*
 .bc-game-state.json
 .bc-game-stats.json
 api-responses
+docker-data
 
 *.log
 bc-game-dashboard.html

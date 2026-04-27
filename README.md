@@ -39,7 +39,65 @@ Automatically claim earnings, swap to BC tokens, and stake them every 5 minutes.
 - Excel workbook with professional formatting
 - Perfect for detailed analysis
 
-## Setup
+## Docker Setup
+
+Docker is the easiest way to run this on another machine because it installs the Node dependencies inside the container.
+
+### 1. Clone the Repo
+
+```bash
+git clone <your-repo-url>
+cd bc-game-automation
+```
+
+### 2. Create `.env`
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and set:
+
+```bash
+BC_GAME_COOKIES=your_full_cookie_string_here
+```
+
+To get the cookie value:
+
+1. Open https://bc.game in Chrome
+2. Log in to your account
+3. Press `F12` and open the Network tab
+4. Make any request on the page
+5. Click that request, open Headers, and copy the full `Cookie:` header value
+
+### 3. Run with Docker
+
+```bash
+docker compose --env-file /dev/null up --build
+```
+
+Use `--env-file /dev/null` because BC.Game cookies can contain `$` characters, and this prevents Docker Compose from trying to treat parts of the cookie as variables.
+
+Docker will automatically create a local `docker-data/` folder if it does not exist. Runtime files are stored there:
+
+- `docker-data/.bc-game-state.json` - Current recovery state, when a cycle is mid-progress
+- `docker-data/.bc-game-stats.json` - Lifetime stats
+- `docker-data/bc-game.log` - Automation log
+- `docker-data/api-responses/` - Saved API responses
+
+Stop it with:
+
+```bash
+docker compose --env-file /dev/null down
+```
+
+To view logs:
+
+```bash
+docker compose --env-file /dev/null logs -f
+```
+
+## Local Setup
 
 ### 1. Install Dependencies
 

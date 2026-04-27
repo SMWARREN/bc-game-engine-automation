@@ -1,7 +1,7 @@
 const fs = require('fs');
-const path = require('path');
+const { DATA_DIR, dataPath } = require('../utils/paths');
 
-const STATS_FILE = path.join(__dirname, '../../.bc-game-stats.json');
+const STATS_FILE = dataPath('.bc-game-stats.json');
 
 function loadStats() {
   try {
@@ -29,6 +29,7 @@ function updateStats(usdClaimed, bcReceived, bcStaked, bcPrice) {
 
   stats.cycleCount = (stats.cycleCount || 0) + 1;
   stats.lastUpdated = new Date().toISOString();
+  fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2));
   return stats;
 }

@@ -2,16 +2,15 @@
 
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 
-const path = require('path');
-const fs = require('fs');
 const { setLogFile } = require('./utils/logger');
+const { dataPath } = require('./utils/paths');
 const { formatNumber, formatUSD } = require('./utils/format');
 const { updatePrices, getPrices } = require('./api/prices');
 const { runAutomation } = require('./automation');
 const { loadStats } = require('./stats/tracker');
 
 // Setup logging
-const LOG_FILE = path.join(__dirname, '../bc-game.log');
+const LOG_FILE = dataPath('bc-game.log');
 setLogFile(LOG_FILE);
 
 // Validate environment
