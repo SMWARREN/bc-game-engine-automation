@@ -14,11 +14,39 @@ const LOG_FILE = dataPath('bc-game.log');
 setLogFile(LOG_FILE);
 
 // Validate environment
+const fs = require('fs');
+const path = require('path');
+const ENV_FILE = path.join(__dirname, '../.env');
+
 const COOKIES = process.env.BC_GAME_COOKIES;
-if (!COOKIES) {
-  console.error('Error: BC_GAME_COOKIES env var required');
-  console.error('Get it from: DevTools → Network → Any request → Headers → Copy "Cookie" header');
-  console.error('Add to .env: BC_GAME_COOKIES="your_full_cookie_string"');
+if (!COOKIES || COOKIES.trim() === '') {
+  console.error('\n' + '='.repeat(60));
+  console.error('❌ ERROR: BC_GAME_COOKIES not found or empty');
+  console.error('='.repeat(60));
+
+  if (!fs.existsSync(ENV_FILE)) {
+    console.error('\n⚠️  .env file not found at:', ENV_FILE);
+    console.error('\nFix: Copy .env.example to .env');
+    console.error('  Command: cp .env.example .env\n');
+  } else {
+    console.error('\n⚠️  .env file exists but BC_GAME_COOKIES is missing or empty');
+    console.error('\nFix: Edit .env and add your cookie:\n');
+    console.error('  BC_GAME_COOKIES=your_full_cookie_string_here\n');
+  }
+
+  console.error('How to get your cookies:');
+  console.error('  1. Open https://bc.game in Chrome');
+  console.error('  2. Log in to your account');
+  console.error('  3. Press F12 → Console tab');
+  console.error('  4. Paste and press Enter: copy(document.cookie)');
+  console.error('  5. Paste result into .env after BC_GAME_COOKIES=\n');
+  console.error('Alternative (Network tab method):');
+  console.error('  1. Press F12 → Network tab');
+  console.error('  2. Refresh the page');
+  console.error('  3. Click any request → Headers');
+  console.error('  4. Find "Cookie:" header and copy entire value');
+  console.error('  5. Paste into .env\n');
+  console.error('='.repeat(60) + '\n');
   process.exit(1);
 }
 

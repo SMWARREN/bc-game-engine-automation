@@ -7,9 +7,22 @@ function findLastStake(historyRecords) {
 }
 
 async function getAccountStatus() {
-  await updatePrices();
+  try {
+    await updatePrices();
+  } catch (error) {
+    throw new Error(`Failed to fetch prices: ${error.message}`);
+  }
 
-  const userResponse = await apiRequest('https://bc.game/api/vault/bc-engine/user/info/', 'POST');
+  let userResponse;
+  try {
+    userResponse = await apiRequest('https://bc.game/api/vault/bc-engine/user/info/', 'POST');
+  } catch (error) {
+    if (error.message.includes('Authentication failed')) {
+      throw new Error('🔒 Login failed: Invalid or expired cookies.\nFix: Get fresh cookies from https://bc.game and update .env');
+    }
+    throw error;
+  }
+
   const userInfo = userResponse.data;
 
   const previewResponse = await apiRequest(

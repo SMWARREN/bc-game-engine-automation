@@ -59,7 +59,15 @@ async function apiRequest(url, method = 'POST', body = null) {
     saveResponse(url, method, body, data);
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      let errorMsg = `HTTP ${response.status}: ${response.statusText}`;
+
+      if (response.status === 401 || response.status === 403) {
+        errorMsg = `Authentication failed (HTTP ${response.status}). Your cookies may be expired or invalid.`;
+        logFile(errorMsg, 'ERROR');
+        logFile('How to fix: Get fresh cookies from bc.game and update .env', 'ERROR');
+      }
+
+      throw new Error(errorMsg);
     }
 
     return data;
