@@ -1,5 +1,5 @@
 const { apiRequest } = require('../api/client');
-const { getPrices } = require('../api/prices');
+const { getPrices, updatePrices } = require('../api/prices');
 const { log, logFile } = require('../utils/logger');
 
 async function swapToBCD(amountUsd) {
@@ -9,7 +9,8 @@ async function swapToBCD(amountUsd) {
       return { bcAmount: 0, bcPrice: 0 };
     }
 
-    // Get current BC price
+    // Refresh immediately before swapping to avoid stale price/request errors.
+    await updatePrices();
     const prices = getPrices();
     const currentPrice = prices.BC || 0.00788; // Fallback to default if not available
     const tokenNumber = Math.floor(parseFloat(amountUsd) / currentPrice);
@@ -20,7 +21,6 @@ async function swapToBCD(amountUsd) {
       'https://bc.game/api/bctrade/forward/api/coin/trade/buyByAmount',
       'POST',
       {
-        price: currentPrice,
         slippage: 5,
         currency: 'BCD',
         amountUsd: parseFloat(amountUsd),
