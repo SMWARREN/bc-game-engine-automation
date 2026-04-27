@@ -145,6 +145,8 @@ docker compose --env-file /dev/null down
 docker compose --env-file NUL down
 ```
 
+If Docker says there is no container or project to stop, that is OK. It just means the automation was not running yet.
+
 Or press `Ctrl+C` if running in foreground.
 
 To view logs:
@@ -687,6 +689,8 @@ git pull
 docker compose --env-file NUL down
 docker compose --env-file NUL up --build
 ```
+
+If the `down` command does not find anything running, continue with the `up --build` command.
 
 To add features or fix issues:
 

@@ -9,12 +9,13 @@ async function swapToBCD(amountUsd) {
       return { bcAmount: 0, bcPrice: 0 };
     }
 
-    // Refresh immediately before swapping to avoid stale price/request errors.
-    await updatePrices();
+    // Refresh only when stale; this keeps swap pricing current without hammering the price endpoint.
+    const priceCheck = await updatePrices();
     const prices = getPrices();
     const currentPrice = prices.BC || 0.00788; // Fallback to default if not available
     const tokenNumber = Math.floor(parseFloat(amountUsd) / currentPrice);
 
+    log(`Price check: BC is ${currentPrice} (${priceCheck.updated ? 'refreshed' : 'cached'})`, 'INFO');
     logFile(`Swapping with current price: $${currentPrice}/BC (token estimate: ${tokenNumber})`);
 
     const swapResponse = await apiRequest(
