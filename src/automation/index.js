@@ -1,4 +1,5 @@
 const { updatePrices, getPrices } = require('../api/prices');
+const { getAccountStatus, printAccountStatus } = require('../account/status');
 const { getPendingBalance, claimEarnings } = require('./claim');
 const { swapToBCD } = require('./swap');
 const { getAvailableBcBalance, previewStake, executStake } = require('./stake');
@@ -138,6 +139,14 @@ async function runAutomation() {
       console.log('='.repeat(60) + '\n');
       logFile(`✓ Complete cycle: ${claimedBalance} USD → ${bcdAmount} BCD → Staked $${bcUsdValue} worth of BC @ $${finalPrice}`);
       clearState();
+
+      try {
+        const accountStatus = await getAccountStatus();
+        printAccountStatus(accountStatus, 'Updated Account Status');
+        console.log('');
+      } catch (error) {
+        log(`Failed to refresh account status after cycle: ${error.message}`, 'WARN');
+      }
     } else {
       logFile(`✗ Stake failed, saving state to retry`);
       saveState({ step: 3, claimedBalance, bcdAmount, bcPrice, preview, timestamp: Date.now() });

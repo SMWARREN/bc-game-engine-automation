@@ -5,13 +5,9 @@ require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const { log, setLogFile } = require('./utils/logger');
 const { dataPath } = require('./utils/paths');
 const { formatNumber, formatUSD } = require('./utils/format');
-const { updatePrices, getPrices } = require('./api/prices');
+const { getAccountStatus, printAccountStatus } = require('./account/status');
 const { runAutomation } = require('./automation');
 const { loadStats } = require('./stats/tracker');
-
-function findLastStake(historyRecords) {
-  return historyRecords.find((record) => record.type === 'STAKE') || null;
-}
 
 // Setup logging
 const LOG_FILE = dataPath('bc-game.log');
@@ -31,35 +27,9 @@ async function showStartupMessage() {
   console.clear();
   const stats = loadStats();
 
-  // Fetch user info and prices from API
-  let userInfo = null;
-  let availableBcBalance = null;
-  let lastStake = null;
+  let accountStatus = null;
   try {
-    await updatePrices();
-    const { apiRequest } = require('./api/client');
-    const response = await apiRequest('https://bc.game/api/vault/bc-engine/user/info/', 'POST');
-    userInfo = response.data;
-
-    const previewResponse = await apiRequest(
-      'https://bc.game/api/vault/bc-engine/stake/preview/',
-      'POST',
-      { stakeAmount: 0.1 }
-    );
-    if (previewResponse.code !== 0) {
-      throw new Error(`Stake preview failed: ${previewResponse.msg || 'Unknown error'}`);
-    }
-    availableBcBalance = previewResponse.data?.currentBalance || '0';
-
-    const historyResponse = await apiRequest(
-      'https://bc.game/api/vault/bc-engine/history/',
-      'POST',
-      { type: 'ALL', pageNo: 1, pageSize: 20 }
-    );
-    if (historyResponse.code !== 0) {
-      throw new Error(`History fetch failed: ${historyResponse.msg || 'Unknown error'}`);
-    }
-    lastStake = findLastStake(historyResponse.data?.list || []);
+    accountStatus = await getAccountStatus();
   } catch (error) {
     log(`Startup account check failed: ${error.message}`, 'ERROR');
     console.error('Cannot start automation without account status.');
@@ -70,18 +40,7 @@ async function showStartupMessage() {
   console.log('🎮 BC.Game Auto-Stake Automation');
   console.log('='.repeat(60));
 
-  if (userInfo) {
-    const prices = getPrices();
-    const stakeUsdValue = (parseFloat(userInfo.stakeAmount) * parseFloat(prices.BC)).toFixed(2);
-
-    console.log(`\n👤 Account Status:`);
-    console.log(`   Current stake: ${formatNumber(userInfo.stakeAmount)} BC`);
-    console.log(`   Stake value: ${formatUSD(stakeUsdValue)}`);
-    console.log(`   Pending balance: ${formatUSD(userInfo.pendingBalance)}`);
-    console.log(`   Earned total: ${formatUSD(userInfo.earnedTotal)}`);
-    console.log(`   Available balance: ${formatNumber(availableBcBalance)} BC`);
-    console.log(`   Last stake: ${lastStake ? `${formatNumber(lastStake.amount)} ${lastStake.currency} (${new Date(lastStake.createTime).toLocaleString()})` : 'None found'}`);
-  }
+  printAccountStatus(accountStatus);
 
   console.log(`\n📊 Lifetime Stats:`);
   console.log(`   Cycles: ${stats.cycleCount}`);
