@@ -73,7 +73,35 @@ To get the cookie value:
 4. Make any request on the page
 5. Click that request, open Headers, and copy the full `Cookie:` header value
 
-### 3. Run with Docker
+### 3. Configure Timezone (Optional)
+
+By default, the app uses **EST/EDT (America/New_York)**. To change it, edit `.env`:
+
+```bash
+APP_TIMEZONE=America/Los_Angeles
+```
+
+Common timezones:
+- `America/New_York` (EST/EDT) - Default
+- `America/Chicago` (CST/CDT)
+- `America/Denver` (MST/MDT)
+- `America/Los_Angeles` (PST/PDT)
+- `Europe/London` (GMT/BST)
+- `Europe/Paris` (CET/CEST)
+- `Asia/Tokyo` (JST)
+- `Australia/Sydney` (AEDT/AEST)
+
+Full list: [IANA Timezone Database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+
+### 4. Run with Docker
+
+**Easiest way (macOS/Linux/Windows):**
+
+```bash
+./docker-start.sh
+```
+
+**Manual (if script doesn't work):**
 
 **macOS/Linux:**
 
@@ -87,7 +115,7 @@ docker compose --env-file /dev/null up --build
 docker compose --env-file NUL up --build
 ```
 
-Use `--env-file /dev/null` on macOS/Linux or `--env-file NUL` on Windows because BC.Game cookies can contain `$` characters. This prevents Docker Compose from trying to treat parts of the cookie as variables while still letting the container read `./.env`.
+Note: Use `--env-file /dev/null` on macOS/Linux or `--env-file NUL` on Windows because BC.Game cookies can contain `$` characters. This prevents Docker Compose from trying to treat parts of the cookie as variables while still letting the container read `./.env`.
 
 Docker will automatically create a local `docker-data/` folder if it does not exist. Runtime files are stored there:
 
@@ -98,21 +126,13 @@ Docker will automatically create a local `docker-data/` folder if it does not ex
 
 Stop it with:
 
-**macOS/Linux:**
-
 ```bash
 docker compose --env-file /dev/null down
 ```
 
-**Windows PowerShell:**
-
-```powershell
-docker compose --env-file NUL down
-```
+Or press `Ctrl+C` if running in foreground.
 
 To view logs:
-
-**macOS/Linux:**
 
 ```bash
 docker compose --env-file /dev/null logs -f

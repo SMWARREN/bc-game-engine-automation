@@ -7,6 +7,7 @@ services:
         format: raw
     environment:
       BC_GAME_DATA_DIR: /data
+      TZ: ${APP_TIMEZONE:-America/New_York}
     volumes:
       - ./docker-data:/data
     restart: unless-stopped
