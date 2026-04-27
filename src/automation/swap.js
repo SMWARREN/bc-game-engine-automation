@@ -29,15 +29,25 @@ async function swapToBCD(amountUsd) {
     );
 
     if (swapResponse.code !== 0) {
-      throw new Error(swapResponse.msg || 'Swap failed');
+      const errorMsg = swapResponse.msg || 'Swap API failed';
+      logFile(`Swap API returned error code ${swapResponse.code}: ${errorMsg}`, 'ERROR');
+      throw new Error(errorMsg);
     }
 
     // Extract BC amount and price from response
     const bcAmount = swapResponse.data?.dealInTokenNumber || 0;
     const bcPrice = swapResponse.data?.dealInPrice || 0;
+
+    if (!bcAmount || !bcPrice) {
+      logFile(`Swap returned incomplete data: amount=${bcAmount}, price=${bcPrice}`, 'WARN');
+      throw new Error('Swap response missing amount or price data');
+    }
+
     log(`Successfully swapped ${amountUsd} USD to ${bcAmount} BC @ $${bcPrice}/BC`, 'SUCCESS');
+    logFile(`Swap completed: ${amountUsd} USD → ${bcAmount} BC @ $${bcPrice}`, 'SUCCESS');
     return { bcAmount, bcPrice };
   } catch (error) {
+    logFile(`Swap attempt failed: ${error.message} (will attempt recovery by checking BC balance)`, 'ERROR');
     log(`Failed to swap to BCD: ${error.message}`, 'ERROR');
     return { bcAmount: 0, bcPrice: 0 };
   }

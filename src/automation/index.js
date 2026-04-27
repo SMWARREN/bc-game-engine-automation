@@ -61,23 +61,31 @@ async function runAutomation() {
       bcPrice = swapResult.bcPrice;
 
       if (bcdAmount <= 0) {
+        logFile(`Swap returned 0 BC, attempting recovery...`);
         if (preSwapBcBalance !== null) {
-          const currentBcBalance = await getAvailableBcBalance();
-          if (currentBcBalance !== null) {
-            const recoveredBcAmount = currentBcBalance - parseFloat(preSwapBcBalance);
-            if (recoveredBcAmount >= 0.1) {
-              bcdAmount = recoveredBcAmount.toFixed(7);
-              const prices = getPrices();
-              bcPrice = prices.BC || (parseFloat(claimedBalance) / recoveredBcAmount);
-              log(`Recovered completed swap from BC balance change: ${bcdAmount} BC`, 'WARN');
-              logFile(`Recovered swap: BC balance ${preSwapBcBalance} → ${currentBcBalance}`);
-              saveState({ step: 2, claimedBalance, bcdAmount, bcPrice, preSwapBcBalance, timestamp: Date.now() });
+          try {
+            const currentBcBalance = await getAvailableBcBalance();
+            logFile(`BC balance check: before=${preSwapBcBalance}, now=${currentBcBalance}`);
+            if (currentBcBalance !== null) {
+              const recoveredBcAmount = currentBcBalance - parseFloat(preSwapBcBalance);
+              logFile(`Balance delta: ${recoveredBcAmount} BC`);
+              if (recoveredBcAmount >= 0.1) {
+                bcdAmount = recoveredBcAmount.toFixed(7);
+                const prices = getPrices();
+                bcPrice = prices.BC || (parseFloat(claimedBalance) / recoveredBcAmount);
+                log(`✅ Recovered completed swap from BC balance change: ${bcdAmount} BC`, 'WARN');
+                logFile(`✓ Recovered swap: BC balance ${preSwapBcBalance} → ${currentBcBalance}, recovered ${bcdAmount} BC`);
+                saveState({ step: 2, claimedBalance, bcdAmount, bcPrice, preSwapBcBalance, timestamp: Date.now() });
+              }
             }
+          } catch (error) {
+            logFile(`Recovery failed: ${error.message}`, 'ERROR');
           }
         }
 
         if (bcdAmount <= 0) {
-          log('Swap did not complete, keeping claimed amount saved to retry next cycle', 'WARN');
+          log('❌ Swap did not complete, keeping claimed amount saved to retry next cycle', 'WARN');
+          logFile(`Swap incomplete after recovery. Will retry in next cycle.`);
           return;
         }
       }
