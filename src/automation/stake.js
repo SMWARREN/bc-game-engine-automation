@@ -3,6 +3,27 @@ const { log, logFile } = require('../utils/logger');
 
 const MIN_STAKE_AMOUNT = 0.1;
 
+async function getAvailableBcBalance() {
+  try {
+    const previewResponse = await apiRequest(
+      'https://bc.game/api/vault/bc-engine/stake/preview/',
+      'POST',
+      {
+        stakeAmount: MIN_STAKE_AMOUNT,
+      }
+    );
+
+    if (previewResponse.code === 0) {
+      return parseFloat(previewResponse.data?.currentBalance || 0);
+    }
+
+    throw new Error(previewResponse.msg || 'Balance preview failed');
+  } catch (error) {
+    log(`Failed to get available BC balance: ${error.message}`, 'WARN');
+    return null;
+  }
+}
+
 async function previewStake(stakeAmount) {
   try {
     if (stakeAmount < MIN_STAKE_AMOUNT) {
@@ -60,4 +81,4 @@ async function executStake(stakeAmount) {
   }
 }
 
-module.exports = { previewStake, executStake };
+module.exports = { getAvailableBcBalance, previewStake, executStake };

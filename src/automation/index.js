@@ -1,7 +1,7 @@
 const { updatePrices, getPrices } = require('../api/prices');
 const { getPendingBalance, claimEarnings } = require('./claim');
 const { swapToBCD } = require('./swap');
-const { previewStake, executStake } = require('./stake');
+const { getAvailableBcBalance, previewStake, executStake } = require('./stake');
 const { saveState, loadState, clearState } = require('../state/manager');
 const { updateStats } = require('../stats/tracker');
 const { log, logFile } = require('../utils/logger');
@@ -16,6 +16,7 @@ async function runAutomation() {
 
     let state = loadState();
     let claimedBalance, bcdAmount, preview;
+    let preSwapBcBalance = null;
 
     // Resume from saved state if it exists
     if (state) {
@@ -39,9 +40,14 @@ async function runAutomation() {
       }
 
       logFile(`Claimed amount: ${claimedBalance}`);
-      saveState({ step: 1, claimedBalance, timestamp: Date.now() });
+      preSwapBcBalance = await getAvailableBcBalance();
+      if (preSwapBcBalance !== null) {
+        logFile(`BC balance before swap: ${preSwapBcBalance}`);
+      }
+      saveState({ step: 1, claimedBalance, preSwapBcBalance, timestamp: Date.now() });
     } else {
       claimedBalance = state.claimedBalance;
+      preSwapBcBalance = state.preSwapBcBalance ?? null;
       logFile(`Resuming with claimed amount: ${claimedBalance}`);
     }
 
@@ -53,15 +59,38 @@ async function runAutomation() {
       bcPrice = swapResult.bcPrice;
 
       if (bcdAmount <= 0) {
+        if (preSwapBcBalance !== null) {
+          const currentBcBalance = await getAvailableBcBalance();
+          if (currentBcBalance !== null) {
+            const recoveredBcAmount = currentBcBalance - parseFloat(preSwapBcBalance);
+            if (recoveredBcAmount >= 0.1) {
+              bcdAmount = recoveredBcAmount.toFixed(7);
+              const prices = getPrices();
+              bcPrice = prices.BC || (parseFloat(claimedBalance) / recoveredBcAmount);
+              log(`Recovered completed swap from BC balance change: ${bcdAmount} BC`, 'WARN');
+              logFile(`Recovered swap: BC balance ${preSwapBcBalance} → ${currentBcBalance}`);
+              saveState({ step: 2, claimedBalance, bcdAmount, bcPrice, preSwapBcBalance, timestamp: Date.now() });
+            }
+          }
+        }
+
+        if (bcdAmount <= 0) {
+          log('Swap did not complete, keeping claimed amount saved to retry next cycle', 'WARN');
+          return;
+        }
+      }
+
+      if (bcdAmount > 0) {
+        logFile(`Swapped to ${bcdAmount} BC @ $${bcPrice}`);
+        saveState({ step: 2, claimedBalance, bcdAmount, bcPrice, preSwapBcBalance, timestamp: Date.now() });
+      } else {
         log('Swap did not complete, keeping claimed amount saved to retry next cycle', 'WARN');
         return;
       }
-
-      logFile(`Swapped to ${bcdAmount} BC @ $${bcPrice}`);
-      saveState({ step: 2, claimedBalance, bcdAmount, bcPrice, timestamp: Date.now() });
     } else {
       bcdAmount = state.bcdAmount;
       bcPrice = state.bcPrice || 0;
+      preSwapBcBalance = state.preSwapBcBalance ?? null;
       logFile(`Resuming with BC amount: ${bcdAmount}`);
     }
 
