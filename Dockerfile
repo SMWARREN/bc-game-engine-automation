@@ -21,4 +21,4 @@ RUN mkdir -p /data \
   && chown -R node:node /app /data
 
 ENTRYPOINT ["/bin/sh", "/usr/local/bin/docker-entrypoint.sh"]
-CMD ["npm", "start"]
+CMD ["node", "src/index.js"]
