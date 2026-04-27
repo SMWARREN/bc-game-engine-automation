@@ -635,6 +635,24 @@ grep "Starting BC.Game Auto-Stake" bc-game.log
 
 ## Updates & Development
 
+To update and restart the Docker automation from inside the repo folder:
+
+**macOS/Linux:**
+
+```bash
+git pull
+docker compose --env-file /dev/null down
+docker compose --env-file /dev/null up --build
+```
+
+**Windows PowerShell:**
+
+```powershell
+git pull
+docker compose --env-file NUL down
+docker compose --env-file NUL up --build
+```
+
 To add features or fix issues:
 
 ```bash
