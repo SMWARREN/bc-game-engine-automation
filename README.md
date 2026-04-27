@@ -4,6 +4,9 @@ Automatically claim earnings, swap to BC tokens, and stake them every 5 minutes.
 
 ![BC.Game Auto-Stake Screenshot](./screenshot.png)
 
+<details>
+<summary>Features</summary>
+
 ## Features
 
 ✅ **Automated Workflow**
@@ -38,6 +41,11 @@ Automatically claim earnings, swap to BC tokens, and stake them every 5 minutes.
 - CSV & JSON formats
 - Excel workbook with professional formatting
 - Perfect for detailed analysis
+
+</details>
+
+<details>
+<summary>Docker Setup</summary>
 
 ## Docker Setup
 
@@ -96,6 +104,8 @@ To view logs:
 ```bash
 docker compose --env-file /dev/null logs -f
 ```
+
+</details>
 
 <details>
 <summary>Local Setup</summary>
