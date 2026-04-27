@@ -51,22 +51,12 @@ Automatically claim earnings, swap to BC tokens, and stake them every 5 minutes.
 
 Docker is the easiest way to run this on another machine because it installs the Node dependencies inside the container.
 
-</details>
-
-<details>
-<summary>1. Clone the Repo</summary>
-
 ### 1. Clone the Repo
 
 ```bash
 git clone <your-repo-url>
 cd bc-game-automation
 ```
-
-</details>
-
-<details>
-<summary>2. Create `.env`</summary>
 
 ### 2. Create `.env`
 
@@ -87,11 +77,6 @@ To get the cookie value:
 3. Press `F12` and open the Network tab
 4. Make any request on the page
 5. Click that request, open Headers, and copy the full `Cookie:` header value
-
-</details>
-
-<details>
-<summary>3. Run with Docker</summary>
 
 ### 3. Run with Docker
 
@@ -127,22 +112,12 @@ docker compose --env-file /dev/null logs -f
 
 ## Local Setup
 
-</details>
-
-<details>
-<summary>1. Install Dependencies</summary>
-
 ### 1. Install Dependencies
 
 ```bash
 cd /Users/saint/dev/bc-game-automation
 npm install
 ```
-
-</details>
-
-<details>
-<summary>2. Get Your Cookies</summary>
 
 ### 2. Get Your Cookies
 
@@ -153,11 +128,6 @@ npm install
 5. Click that request → Headers → find `Cookie:` header
 6. Copy the entire value
 
-</details>
-
-<details>
-<summary>3. Create .env File</summary>
-
 ### 3. Create .env File
 
 ```bash
@@ -167,11 +137,6 @@ EOF
 ```
 
 Replace `your_full_cookie_string_here` with the Cookie header value from step 2.
-
-</details>
-
-<details>
-<summary>4. Run It</summary>
 
 ### 4. Run It
 
@@ -213,11 +178,6 @@ pkill -f "node src/index.js"
 
 ## How It Works
 
-</details>
-
-<details>
-<summary>The Automation Cycle</summary>
-
 ### The Automation Cycle
 
 Every 5 minutes, the script:
@@ -228,11 +188,6 @@ Every 5 minutes, the script:
 4. **Preview Stake** - Shows what will happen when you stake
 5. **Execute Stake** - Actually stakes the BC tokens in your account
 6. **Update Stats** - Saves earnings, amounts staked, prices, and timestamps
-
-</details>
-
-<details>
-<summary>Example: What You'll See</summary>
 
 ### Example: What You'll See
 
@@ -284,11 +239,6 @@ Every 5 minutes, the script:
 ```
 No pending balance to claim
 ```
-
-</details>
-
-<details>
-<summary>Behind the Scenes</summary>
 
 ### Behind the Scenes
 
@@ -357,11 +307,6 @@ The script saves progress after each successful step so it can resume if somethi
 }
 ```
 
-</details>
-
-<details>
-<summary>Scenario: What Happens If Something Fails?</summary>
-
 ### Scenario: What Happens If Something Fails?
 
 **Cycle 1 - Everything works:**
@@ -401,22 +346,12 @@ npm run dashboard
 
 This generates `bc-game-dashboard.html` and opens it in your browser.
 
-</details>
-
-<details>
-<summary>Charts Included</summary>
-
 ### Charts Included
 
 1. **📈 Daily Earnings vs Staked** - Bar chart comparing what you earned vs reinvested each day
 2. **📊 Cumulative Growth** - Line chart showing your total earnings and staked amounts over time
 3. **💰 Daily Net Change** - Bar chart of your daily profit/loss (green = positive, red = negative)
 4. **📉 Net Position** - Line chart showing your cumulative net position over time
-
-</details>
-
-<details>
-<summary>Example Dashboard</summary>
 
 ### Example Dashboard
 
@@ -469,11 +404,6 @@ Exporting to files...
 ✅ History exported to bc-game-history-2026-04-18.json
 ```
 
-</details>
-
-<details>
-<summary>📊 Excel Workbook (`bc-game-analysis-YYYY-MM-DD.xlsx`)</summary>
-
 ### 📊 Excel Workbook (`bc-game-analysis-YYYY-MM-DD.xlsx`)
 
 **Daily Summary Sheet:**
@@ -509,11 +439,6 @@ Avg Daily Staked                | 752451.7206
 - **Cumulative**: Your running totals over time to see growth trajectory
 - **Avg Daily**: Daily averages to understand your typical activity
 
-</details>
-
-<details>
-<summary>📋 CSV File (`bc-game-history-YYYY-MM-DD.csv`)</summary>
-
 ### 📋 CSV File (`bc-game-history-YYYY-MM-DD.csv`)
 
 ```
@@ -524,11 +449,6 @@ Date,Earnings (BCD),Staked (BCD),Other (BCD),Total (BCD),Transaction Count
 ```
 
 Simple spreadsheet-ready format. Open in Excel, Sheets, or Numbers.
-
-</details>
-
-<details>
-<summary>📄 JSON File (`bc-game-history-YYYY-MM-DD.json`)</summary>
 
 ### 📄 JSON File (`bc-game-history-YYYY-MM-DD.json`)
 
@@ -599,11 +519,6 @@ These stats are shown every time you start the script, so you can see your progr
 
 ## Troubleshooting
 
-</details>
-
-<details>
-<summary>Issue: "INSUFFICIENT_BALANCE"</summary>
-
 ### Issue: "INSUFFICIENT_BALANCE"
 
 **What it means:** You have enough money to claim, but not enough to buy the amount of BC the swap tried to get.
@@ -629,11 +544,6 @@ This shows you claimed $2.50 but swap hasn't completed yet.
 
 ---
 
-</details>
-
-<details>
-<summary>Issue: "HTTP 401 or 403" Errors</summary>
-
 ### Issue: "HTTP 401 or 403" Errors
 
 **What it means:** Your authentication failed. Usually because cookies expired.
@@ -654,11 +564,6 @@ This shows you claimed $2.50 but swap hasn't completed yet.
 
 ---
 
-</details>
-
-<details>
-<summary>Issue: "No pending balance to claim"</summary>
-
 ### Issue: "No pending balance to claim"
 
 **What it means:** You have no earned money to claim yet - this is normal!
@@ -677,11 +582,6 @@ No pending balance to claim
 And the script will retry in 5 minutes. Nothing is wrong!
 
 ---
-
-</details>
-
-<details>
-<summary>Checking Logs for Details</summary>
 
 ### Checking Logs for Details
 
