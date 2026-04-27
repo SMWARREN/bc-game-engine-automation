@@ -19,18 +19,18 @@ const path = require('path');
 const ENV_FILE = path.join(__dirname, '../.env');
 
 console.log('🔍 Checking .env file...');
+const COOKIES = process.env.BC_GAME_COOKIES;
 if (fs.existsSync(ENV_FILE)) {
   console.log('✅ .env file found at:', ENV_FILE);
+} else if (COOKIES) {
+  console.log('✅ BC_GAME_COOKIES loaded from environment (Docker/Compose); /app/.env is not required');
 } else {
   console.log('❌ .env file NOT found at:', ENV_FILE);
 }
 
-const COOKIES = process.env.BC_GAME_COOKIES;
-const cookiePreview = COOKIES ? COOKIES.substring(0, 50) + '...' : '[EMPTY]';
-console.log('📝 BC_GAME_COOKIES loaded:', cookiePreview);
+console.log('📝 BC_GAME_COOKIES:', COOKIES ? `loaded (${COOKIES.length} characters)` : '[EMPTY]');
 
 if (COOKIES) {
-  console.log('   Length:', COOKIES.length, 'characters');
   if (COOKIES.length < 100) {
     console.warn('⚠️  WARNING: Cookie looks too short (should be 200+ chars)');
   }
@@ -46,8 +46,11 @@ if (!COOKIES || COOKIES.trim() === '') {
 
   if (!fs.existsSync(ENV_FILE)) {
     console.error('\n⚠️  .env file not found at:', ENV_FILE);
-    console.error('\nFix: Copy .env.example to .env');
-    console.error('  Command: cp .env.example .env\n');
+    console.error('\nFix for local Node: Copy .env.example to .env');
+    console.error('  Command: cp .env.example .env');
+    console.error('\nFix for Docker: Make sure .env is next to docker-compose.yml and run Compose from this folder.');
+    console.error('  macOS/Linux: docker compose --env-file /dev/null up --build');
+    console.error('  Windows CMD: docker compose --env-file NUL up --build\n');
   } else {
     console.error('\n⚠️  .env file exists but BC_GAME_COOKIES is missing or empty');
     console.error('\nFix: Edit .env and add your cookie:\n');
