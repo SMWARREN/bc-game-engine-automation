@@ -8,13 +8,43 @@ const { updateStats } = require('../stats/tracker');
 const { log, logFile } = require('../utils/logger');
 const { formatNumber, formatUSD } = require('../utils/format');
 
+const PRICE_STATUS_LOG_INTERVAL_MS = 15 * 60 * 1000;
+let lastVisiblePriceLogMs = 0;
+
+function logPriceStatus(priceCheck) {
+  const now = Date.now();
+  const shouldLog =
+    priceCheck.updated ||
+    !lastVisiblePriceLogMs ||
+    now - lastVisiblePriceLogMs >= PRICE_STATUS_LOG_INTERVAL_MS;
+
+  if (!shouldLog) {
+    return;
+  }
+
+  lastVisiblePriceLogMs = now;
+
+  const bcPrice = parseFloat(priceCheck.BC) || 0;
+  if (bcPrice <= 0) {
+    log('BC price check failed. Will retry on the next check.', 'WARN');
+    return;
+  }
+
+  const ageSeconds = priceCheck.lastUpdatedMs
+    ? Math.max(0, Math.round((now - priceCheck.lastUpdatedMs) / 1000))
+    : 0;
+  const source = priceCheck.updated ? 'refreshed' : `cached, ${ageSeconds}s old`;
+  log(`BC price check: ${formatUSD(bcPrice)}/BC (${source})`, 'INFO');
+}
+
 async function runAutomation() {
   logFile('=== Starting BC.Game Auto-Stake ===');
   log('Automation check started. Still running in the background.', 'INFO');
 
   try {
     // Update prices at start of each cycle
-    await updatePrices();
+    const priceCheck = await updatePrices();
+    logPriceStatus(priceCheck);
 
     let state = loadState();
     let claimedBalance, bcdAmount, preview;

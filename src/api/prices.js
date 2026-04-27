@@ -19,19 +19,24 @@ async function updatePrices(options = {}) {
     return { ...currentPrices, updated: false };
   }
 
+  let updated = false;
+
   try {
     const response = await apiRequest('https://bc.game/api/game/support/system/conf/usdPrice', 'GET');
     if (response.code === 0 && response.data) {
       currentPrices.BC = parseFloat(response.data.BC) || 0;
       currentPrices.lastUpdated = new Date().toISOString();
       currentPrices.lastUpdatedMs = Date.now();
+      updated = true;
       logFile(`Updated BC price: $${currentPrices.BC}`);
+    } else {
+      logFile(`Failed to fetch prices: invalid response from price API`, 'WARN');
     }
   } catch (error) {
     logFile(`Failed to fetch prices: ${error.message}`, 'WARN');
   }
 
-  return { ...currentPrices, updated: true };
+  return { ...currentPrices, updated };
 }
 
 function getPrices() {
