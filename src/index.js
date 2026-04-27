@@ -2,7 +2,7 @@
 
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 
-const { setLogFile } = require('./utils/logger');
+const { log, setLogFile } = require('./utils/logger');
 const { dataPath } = require('./utils/paths');
 const { formatNumber, formatUSD } = require('./utils/format');
 const { updatePrices, getPrices } = require('./api/prices');
@@ -35,7 +35,9 @@ async function showStartupMessage() {
     const response = await apiRequest('https://bc.game/api/vault/bc-engine/user/info/', 'POST');
     userInfo = response.data;
   } catch (error) {
-    // Continue even if API fails
+    log(`User info failed: ${error.message}`, 'ERROR');
+    console.error('Cannot start automation without account status.');
+    process.exit(1);
   }
 
   console.log('\n' + '='.repeat(60));
