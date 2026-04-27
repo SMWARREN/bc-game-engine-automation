@@ -80,11 +80,19 @@ To get the cookie value:
 
 ### 3. Run with Docker
 
+**macOS/Linux:**
+
 ```bash
 docker compose --env-file /dev/null up --build
 ```
 
-Use `--env-file /dev/null` because BC.Game cookies can contain `$` characters, and this prevents Docker Compose from trying to treat parts of the cookie as variables.
+**Windows PowerShell:**
+
+```powershell
+docker compose --env-file NUL up --build
+```
+
+Use `--env-file /dev/null` on macOS/Linux or `--env-file NUL` on Windows because BC.Game cookies can contain `$` characters. This prevents Docker Compose from trying to treat parts of the cookie as variables while still letting the container read `./.env`.
 
 Docker will automatically create a local `docker-data/` folder if it does not exist. Runtime files are stored there:
 
@@ -95,14 +103,30 @@ Docker will automatically create a local `docker-data/` folder if it does not ex
 
 Stop it with:
 
+**macOS/Linux:**
+
 ```bash
 docker compose --env-file /dev/null down
 ```
 
+**Windows PowerShell:**
+
+```powershell
+docker compose --env-file NUL down
+```
+
 To view logs:
+
+**macOS/Linux:**
 
 ```bash
 docker compose --env-file /dev/null logs -f
+```
+
+**Windows PowerShell:**
+
+```powershell
+docker compose --env-file NUL logs -f
 ```
 
 </details>
