@@ -9,6 +9,10 @@ const { updatePrices, getPrices } = require('./api/prices');
 const { runAutomation } = require('./automation');
 const { loadStats } = require('./stats/tracker');
 
+function findLastStake(historyRecords) {
+  return historyRecords.find((record) => record.type === 'STAKE') || null;
+}
+
 // Setup logging
 const LOG_FILE = dataPath('bc-game.log');
 setLogFile(LOG_FILE);
@@ -29,13 +33,35 @@ async function showStartupMessage() {
 
   // Fetch user info and prices from API
   let userInfo = null;
+  let availableBcBalance = null;
+  let lastStake = null;
   try {
     await updatePrices();
     const { apiRequest } = require('./api/client');
     const response = await apiRequest('https://bc.game/api/vault/bc-engine/user/info/', 'POST');
     userInfo = response.data;
+
+    const previewResponse = await apiRequest(
+      'https://bc.game/api/vault/bc-engine/stake/preview/',
+      'POST',
+      { stakeAmount: 0.1 }
+    );
+    if (previewResponse.code !== 0) {
+      throw new Error(`Stake preview failed: ${previewResponse.msg || 'Unknown error'}`);
+    }
+    availableBcBalance = previewResponse.data?.currentBalance || '0';
+
+    const historyResponse = await apiRequest(
+      'https://bc.game/api/vault/bc-engine/history/',
+      'POST',
+      { type: 'ALL', pageNo: 1, pageSize: 20 }
+    );
+    if (historyResponse.code !== 0) {
+      throw new Error(`History fetch failed: ${historyResponse.msg || 'Unknown error'}`);
+    }
+    lastStake = findLastStake(historyResponse.data?.list || []);
   } catch (error) {
-    log(`User info failed: ${error.message}`, 'ERROR');
+    log(`Startup account check failed: ${error.message}`, 'ERROR');
     console.error('Cannot start automation without account status.');
     process.exit(1);
   }
@@ -53,6 +79,8 @@ async function showStartupMessage() {
     console.log(`   Stake value: ${formatUSD(stakeUsdValue)}`);
     console.log(`   Pending balance: ${formatUSD(userInfo.pendingBalance)}`);
     console.log(`   Earned total: ${formatUSD(userInfo.earnedTotal)}`);
+    console.log(`   Available balance: ${formatNumber(availableBcBalance)} BC`);
+    console.log(`   Last stake: ${lastStake ? `${formatNumber(lastStake.amount)} ${lastStake.currency} (${new Date(lastStake.createTime).toLocaleString()})` : 'None found'}`);
   }
 
   console.log(`\n📊 Lifetime Stats:`);
