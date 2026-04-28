@@ -80,12 +80,13 @@ Advanced users can override the exact browser headers with:
 
 ```bash
 BC_GAME_USER_AGENT=your_browser_user_agent
+BC_GAME_SMID=your_smid_header_value
 BC_GAME_SEC_GPC=1
 BC_GAME_SEC_CH_UA=your_sec_ch_ua_header
 BC_GAME_SEC_CH_UA_PLATFORM="Windows"
 ```
 
-Leave `BC_GAME_SEC_CH_UA` and `BC_GAME_SEC_CH_UA_PLATFORM` unset when using the `firefox-windows` profile.
+The app automatically tries to send the `smid` header from the `smidV2` cookie. Use `BC_GAME_SMID` only if "Copy as fetch/cURL" shows a different exact `smid` header value. Leave `BC_GAME_SEC_CH_UA` and `BC_GAME_SEC_CH_UA_PLATFORM` unset when using the `firefox-windows` profile.
 
 To get the cookie value:
 
@@ -231,12 +232,13 @@ Advanced users can override the exact browser headers with:
 
 ```bash
 BC_GAME_USER_AGENT=your_browser_user_agent
+BC_GAME_SMID=your_smid_header_value
 BC_GAME_SEC_GPC=1
 BC_GAME_SEC_CH_UA=your_sec_ch_ua_header
 BC_GAME_SEC_CH_UA_PLATFORM="Windows"
 ```
 
-Leave `BC_GAME_SEC_CH_UA` and `BC_GAME_SEC_CH_UA_PLATFORM` unset when using the `firefox-windows` profile.
+The app automatically tries to send the `smid` header from the `smidV2` cookie. Use `BC_GAME_SMID` only if "Copy as fetch/cURL" shows a different exact `smid` header value. Leave `BC_GAME_SEC_CH_UA` and `BC_GAME_SEC_CH_UA_PLATFORM` unset when using the `firefox-windows` profile.
 
 ### 4. Run It
 

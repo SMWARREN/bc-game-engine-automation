@@ -43,6 +43,15 @@ function addOptionalHeader(headers, name, value) {
   }
 }
 
+function getCookieValue(name) {
+  if (!COOKIES) {
+    return '';
+  }
+
+  const match = COOKIES.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+  return match ? match[1] : '';
+}
+
 function getBrowserProfile() {
   const requestedProfile = process.env.BC_GAME_BROWSER_PROFILE || DEFAULT_BROWSER_PROFILE;
   const profile = BROWSER_PROFILES[requestedProfile];
@@ -75,6 +84,7 @@ function buildHeaders() {
   addOptionalHeader(headers, 'sec-ch-ua-mobile', getEnvValue('BC_GAME_SEC_CH_UA_MOBILE', profile.secChUaMobile));
   addOptionalHeader(headers, 'sec-ch-ua-platform', getEnvValue('BC_GAME_SEC_CH_UA_PLATFORM', profile.secChUaPlatform));
   addOptionalHeader(headers, 'sec-gpc', getEnvValue('BC_GAME_SEC_GPC', profile.secGpc || ''));
+  addOptionalHeader(headers, 'smid', getEnvValue('BC_GAME_SMID', getCookieValue('smidV2') || getCookieValue('smid')));
 
   if (!loggedBrowserProfile) {
     log(`Using browser header profile: ${profile.name}`, 'INFO');
