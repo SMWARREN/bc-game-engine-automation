@@ -21,6 +21,7 @@ const BROWSER_PROFILES = {
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0',
     accept: 'application/json, text/plain, /',
     secGpc: '1',
+    useSmidHeader: true,
     secChUa: '',
     secChUaMobile: '',
     secChUaPlatform: '',
@@ -67,6 +68,7 @@ function getBrowserProfile() {
 function buildHeaders() {
   const profile = getBrowserProfile();
   const userAgent = getEnvValue('BC_GAME_USER_AGENT', profile.userAgent);
+  const smidHeader = getEnvValue('BC_GAME_SMID', profile.useSmidHeader ? getCookieValue('smidV2') || getCookieValue('smid') : '');
   const headers = {
     'accept': getEnvValue('BC_GAME_ACCEPT', profile.accept || 'application/json, text/plain, */*'),
     'accept-language': getEnvValue('BC_GAME_ACCEPT_LANGUAGE', 'en'),
@@ -84,7 +86,7 @@ function buildHeaders() {
   addOptionalHeader(headers, 'sec-ch-ua-mobile', getEnvValue('BC_GAME_SEC_CH_UA_MOBILE', profile.secChUaMobile));
   addOptionalHeader(headers, 'sec-ch-ua-platform', getEnvValue('BC_GAME_SEC_CH_UA_PLATFORM', profile.secChUaPlatform));
   addOptionalHeader(headers, 'sec-gpc', getEnvValue('BC_GAME_SEC_GPC', profile.secGpc || ''));
-  addOptionalHeader(headers, 'smid', getEnvValue('BC_GAME_SMID', getCookieValue('smidV2') || getCookieValue('smid')));
+  addOptionalHeader(headers, 'smid', smidHeader);
 
   if (!loggedBrowserProfile) {
     log(`Using browser header profile: ${profile.name}`, 'INFO');
