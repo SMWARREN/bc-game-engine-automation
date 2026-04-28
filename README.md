@@ -65,6 +65,27 @@ Open `.env` and set:
 BC_GAME_COOKIES=your_full_cookie_string_here
 ```
 
+If the cookies came from Firefox on Windows, also add:
+
+```bash
+BC_GAME_BROWSER_PROFILE=firefox-windows
+```
+
+Available browser profiles:
+- `chrome-macos` - Default
+- `chrome-windows`
+- `firefox-windows`
+
+Advanced users can override the exact browser headers with:
+
+```bash
+BC_GAME_USER_AGENT=your_browser_user_agent
+BC_GAME_SEC_CH_UA=your_sec_ch_ua_header
+BC_GAME_SEC_CH_UA_PLATFORM="Windows"
+```
+
+Leave `BC_GAME_SEC_CH_UA` and `BC_GAME_SEC_CH_UA_PLATFORM` unset when using the `firefox-windows` profile.
+
 To get the cookie value:
 
 1. Open https://bc.game in Chrome
@@ -193,6 +214,27 @@ EOF
 ```
 
 Replace `your_full_cookie_string_here` with the Cookie header value from step 2.
+
+If the cookies came from Firefox on Windows, also add:
+
+```bash
+BC_GAME_BROWSER_PROFILE=firefox-windows
+```
+
+Available browser profiles:
+- `chrome-macos` - Default
+- `chrome-windows`
+- `firefox-windows`
+
+Advanced users can override the exact browser headers with:
+
+```bash
+BC_GAME_USER_AGENT=your_browser_user_agent
+BC_GAME_SEC_CH_UA=your_sec_ch_ua_header
+BC_GAME_SEC_CH_UA_PLATFORM="Windows"
+```
+
+Leave `BC_GAME_SEC_CH_UA` and `BC_GAME_SEC_CH_UA_PLATFORM` unset when using the `firefox-windows` profile.
 
 ### 4. Run It
 

@@ -3,6 +3,84 @@ const { log, logFile } = require('../utils/logger');
 const { saveResponse } = require('../responses/tracker');
 
 const COOKIES = process.env.BC_GAME_COOKIES;
+const DEFAULT_BROWSER_PROFILE = 'chrome-macos';
+const BROWSER_PROFILES = {
+  'chrome-macos': {
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+    secChUa: '"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"',
+    secChUaMobile: '?0',
+    secChUaPlatform: '"macOS"',
+  },
+  'chrome-windows': {
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+    secChUa: '"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"',
+    secChUaMobile: '?0',
+    secChUaPlatform: '"Windows"',
+  },
+  'firefox-windows': {
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0',
+    secChUa: '',
+    secChUaMobile: '',
+    secChUaPlatform: '',
+  },
+};
+
+let loggedBrowserProfile = false;
+
+function getEnvValue(name, fallback) {
+  if (Object.prototype.hasOwnProperty.call(process.env, name)) {
+    return process.env[name].trim();
+  }
+
+  return fallback;
+}
+
+function addOptionalHeader(headers, name, value) {
+  if (value) {
+    headers[name] = value;
+  }
+}
+
+function getBrowserProfile() {
+  const requestedProfile = process.env.BC_GAME_BROWSER_PROFILE || DEFAULT_BROWSER_PROFILE;
+  const profile = BROWSER_PROFILES[requestedProfile];
+
+  if (!profile) {
+    logFile(`Unknown BC_GAME_BROWSER_PROFILE "${requestedProfile}", using ${DEFAULT_BROWSER_PROFILE}`, 'WARN');
+    return { name: DEFAULT_BROWSER_PROFILE, ...BROWSER_PROFILES[DEFAULT_BROWSER_PROFILE] };
+  }
+
+  return { name: requestedProfile, ...profile };
+}
+
+function buildHeaders() {
+  const profile = getBrowserProfile();
+  const userAgent = getEnvValue('BC_GAME_USER_AGENT', profile.userAgent);
+  const headers = {
+    'accept': getEnvValue('BC_GAME_ACCEPT', 'application/json, text/plain, */*'),
+    'accept-language': getEnvValue('BC_GAME_ACCEPT_LANGUAGE', 'en'),
+    'content-type': 'application/json',
+    'sec-fetch-dest': getEnvValue('BC_GAME_SEC_FETCH_DEST', 'empty'),
+    'sec-fetch-mode': getEnvValue('BC_GAME_SEC_FETCH_MODE', 'cors'),
+    'sec-fetch-site': getEnvValue('BC_GAME_SEC_FETCH_SITE', 'same-origin'),
+    'user-agent': userAgent,
+    'origin': getEnvValue('BC_GAME_ORIGIN', 'https://bc.game'),
+    'referer': getEnvValue('BC_GAME_REFERER', 'https://bc.game/bc'),
+    'Cookie': COOKIES,
+  };
+
+  addOptionalHeader(headers, 'sec-ch-ua', getEnvValue('BC_GAME_SEC_CH_UA', profile.secChUa));
+  addOptionalHeader(headers, 'sec-ch-ua-mobile', getEnvValue('BC_GAME_SEC_CH_UA_MOBILE', profile.secChUaMobile));
+  addOptionalHeader(headers, 'sec-ch-ua-platform', getEnvValue('BC_GAME_SEC_CH_UA_PLATFORM', profile.secChUaPlatform));
+
+  if (!loggedBrowserProfile) {
+    log(`Using browser header profile: ${profile.name}`, 'INFO');
+    logFile(`Using User-Agent: ${userAgent}`);
+    loggedBrowserProfile = true;
+  }
+
+  return headers;
+}
 
 async function apiRequest(url, method = 'POST', body = null) {
   try {
@@ -16,21 +94,7 @@ async function apiRequest(url, method = 'POST', body = null) {
 
     const fetchOptions = {
       method,
-      headers: {
-        'accept': 'application/json, text/plain, */*',
-        'accept-language': 'en',
-        'content-type': 'application/json',
-        'sec-ch-ua': '"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"macOS"',
-        'sec-fetch-dest': 'empty',
-        'sec-fetch-mode': 'cors',
-        'sec-fetch-site': 'same-origin',
-        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
-        'origin': 'https://bc.game',
-        'referer': 'https://bc.game/bc',
-        'Cookie': COOKIES,
-      },
+      headers: buildHeaders(),
     };
 
     if (method === 'POST' && body) {
