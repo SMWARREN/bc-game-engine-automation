@@ -80,6 +80,7 @@ Advanced users can override the exact browser headers with:
 
 ```bash
 BC_GAME_USER_AGENT=your_browser_user_agent
+BC_GAME_SEC_GPC=1
 BC_GAME_SEC_CH_UA=your_sec_ch_ua_header
 BC_GAME_SEC_CH_UA_PLATFORM="Windows"
 ```
@@ -230,6 +231,7 @@ Advanced users can override the exact browser headers with:
 
 ```bash
 BC_GAME_USER_AGENT=your_browser_user_agent
+BC_GAME_SEC_GPC=1
 BC_GAME_SEC_CH_UA=your_sec_ch_ua_header
 BC_GAME_SEC_CH_UA_PLATFORM="Windows"
 ```

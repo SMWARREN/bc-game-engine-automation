@@ -19,6 +19,8 @@ const BROWSER_PROFILES = {
   },
   'firefox-windows': {
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0',
+    accept: 'application/json, text/plain, /',
+    secGpc: '1',
     secChUa: '',
     secChUaMobile: '',
     secChUaPlatform: '',
@@ -57,7 +59,7 @@ function buildHeaders() {
   const profile = getBrowserProfile();
   const userAgent = getEnvValue('BC_GAME_USER_AGENT', profile.userAgent);
   const headers = {
-    'accept': getEnvValue('BC_GAME_ACCEPT', 'application/json, text/plain, */*'),
+    'accept': getEnvValue('BC_GAME_ACCEPT', profile.accept || 'application/json, text/plain, */*'),
     'accept-language': getEnvValue('BC_GAME_ACCEPT_LANGUAGE', 'en'),
     'content-type': 'application/json',
     'sec-fetch-dest': getEnvValue('BC_GAME_SEC_FETCH_DEST', 'empty'),
@@ -72,6 +74,7 @@ function buildHeaders() {
   addOptionalHeader(headers, 'sec-ch-ua', getEnvValue('BC_GAME_SEC_CH_UA', profile.secChUa));
   addOptionalHeader(headers, 'sec-ch-ua-mobile', getEnvValue('BC_GAME_SEC_CH_UA_MOBILE', profile.secChUaMobile));
   addOptionalHeader(headers, 'sec-ch-ua-platform', getEnvValue('BC_GAME_SEC_CH_UA_PLATFORM', profile.secChUaPlatform));
+  addOptionalHeader(headers, 'sec-gpc', getEnvValue('BC_GAME_SEC_GPC', profile.secGpc || ''));
 
   if (!loggedBrowserProfile) {
     log(`Using browser header profile: ${profile.name}`, 'INFO');
@@ -95,6 +98,9 @@ async function apiRequest(url, method = 'POST', body = null) {
     const fetchOptions = {
       method,
       headers: buildHeaders(),
+      credentials: 'include',
+      mode: 'cors',
+      referrer: getEnvValue('BC_GAME_REFERER', 'https://bc.game/bc'),
     };
 
     if (method === 'POST' && body) {
